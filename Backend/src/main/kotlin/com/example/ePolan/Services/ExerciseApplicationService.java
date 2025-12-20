@@ -4,6 +4,7 @@ import com.example.ePolan.Model.Dtos.ExerciseWithPointsDto;
 import com.example.ePolan.Model.Dtos.LessonDescriptionDto;
 import com.example.ePolan.Model.Entities.Exercise;
 import com.example.ePolan.Model.Entities.Lesson;
+import com.example.ePolan.Services.filegenerator.DocumentFormat;
 import com.itextpdf.text.DocumentException;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class ExerciseApplicationService {
     private final EmailService emailService;
-    private final FileService fileService;
+    private final DocumentService documentService;
     private final ExerciseService exerciseService;
     private final LessonService lessonService;
     @Retryable(retryFor = {MessagingException.class, FileNotFoundException.class, DocumentException.class})
@@ -42,10 +43,13 @@ public class ExerciseApplicationService {
         LessonDescriptionDto lesson = lessonService.getLessonInfo(lessonId);
         String name = null;
         try {
-            name = fileService.createPDFList(exercises1, exercises2, lesson);
+            name = documentService.createDocument(DocumentFormat.PDF, exercises1, exercises2, lesson);
             emailService.sendMessageWithList(lesson.getInstructor(), lesson, name);
-        } catch (MessagingException | FileNotFoundException | DocumentException e) {
-            System.err.println("Error generating pdf or sending an email: " + e.getMessage());
+        } catch (MessagingException e ) {
+            System.err.println("Error sending an email: " + e.getMessage());
+            throw new RuntimeException(e);
+        } catch (Exception e){
+            System.err.println("Error generating document: " + e.getMessage());
             throw new RuntimeException(e);
         }finally {
             if (name != null) {

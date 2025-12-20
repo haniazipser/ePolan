@@ -1,7 +1,7 @@
 package com.example.ePolan.Controllers;
 
 import com.example.ePolan.Services.CourseApplicationService;
-import com.example.ePolan.Services.FileService;
+import com.example.ePolan.Services.DocumentService;
 import com.example.ePolan.Services.UserInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TaskController {
     private final UserInfoService userInfoService;
     private final CourseApplicationService courseApplicationService;
-    private final FileService fileService;
+    private final DocumentService fileService;
 
     /*@GetMapping("")
     public Set<TaskDto> getStudentsTasks(){
