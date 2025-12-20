@@ -1,6 +1,5 @@
 package com.example.ePolan.Controllers;
 
-import com.example.ePolan.Services.KeycloakClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

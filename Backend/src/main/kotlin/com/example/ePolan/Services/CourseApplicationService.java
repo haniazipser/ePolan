@@ -1,6 +1,9 @@
 package com.example.ePolan.Services;
 
 import com.example.ePolan.Model.Dtos.CourseDto;
+import com.example.ePolan.Services.messagesender.EmailMessageSender;
+import com.example.ePolan.Services.messagesender.GroupInvitationMessage;
+import com.example.ePolan.Services.messagesender.Message;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 
@@ -14,45 +17,24 @@ import java.util.UUID;
 @Transactional
 public class CourseApplicationService {
     private final CourseService groupClassService;
-    private final EmailService emailService;
-    private final LessonService lessonService;
-    private final DeclarationService declarationService;
-    private final ExerciseService exerciseService;
+    private final EmailMessageSender emailSender;
 
     public void addStudentToGroup( String email, UUID courseId) {
 
-        String link = "tutti://group/" + courseId;
         groupClassService.addStudentToGroup(email, courseId);
         CourseDto group = groupClassService.getGroupInfo(courseId);
 
-        String message = "<p>You have been added to <b>" + group.getName() + "</b> course!</p>" +
-                "<p>If you accept the invitation, use this code:</p>" +
-                "<div style='margin-top: 15px; margin-bottom: 15px; font-weight: bold; font-size: 18px;'>" +
-                group.getCourseCode() +
-                "</div>" +
-                "<p>in your <b>ePolan</b> application to join the team.</p>";
+        Message message = new GroupInvitationMessage(
+                emailSender,
+                group,
+                courseId
+        );
+
         try {
-            emailService.sendMessage(email, "New group Alert", message);
-        }catch (MessagingException e){
-            System.out.println("error");
+            message.send(email);
+        } catch (Exception e) {
+            // log / error handling
+            System.out.println("Error sending invitation");
         }
     }
-
-   /* public Set<TaskDto> getStudentsTasks(String student){
-        Set<CourseDto> groups = groupClassService.getUsersGroups(student);
-        Set<TaskDto> tasks = new HashSet<>();
-        for (CourseDto g : groups)   {
-            LessonDto s = lessonService.getNextLesson(g.getId());
-            TaskDto task = new TaskDto();
-            task.setCourseName(g.getName());
-            task.setGroupId(g.getId());
-            task.setDueDate(s.getClassDate());
-            Integer count = declarationService.getDeclarationsForSessionCount(student, s.getId());
-            task.setNumberOfDeclarations(count);
-            Set<ExerciseDto> assigned = exerciseService.getAssignedExercisesForLesson(student, s.getId());
-            task.setAssigned(assigned);
-            tasks.add(task);
-        }
-        return tasks;
-    }*/
 }

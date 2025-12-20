@@ -5,9 +5,14 @@ import com.example.ePolan.Model.Dtos.LessonDescriptionDto;
 import com.example.ePolan.Model.Entities.Exercise;
 import com.example.ePolan.Model.Entities.Lesson;
 import com.example.ePolan.Services.filegenerator.DocumentFormat;
+import com.example.ePolan.Services.messagesender.AdminErrorMessage;
+import com.example.ePolan.Services.messagesender.EmailMessageSender;
+import com.example.ePolan.Services.messagesender.LessonListMessage;
+import com.example.ePolan.Services.messagesender.Message;
 import com.itextpdf.text.DocumentException;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -26,10 +31,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Transactional
 public class ExerciseApplicationService {
-    private final EmailService emailService;
+    private final EmailMessageSender emailSender;
     private final DocumentService documentService;
     private final ExerciseService exerciseService;
     private final LessonService lessonService;
+    @Value("${admin.email}") String adminEmail;
     @Retryable(retryFor = {MessagingException.class, FileNotFoundException.class, DocumentException.class})
     public void exportListToPdf(UUID lessonId){
         List<ExerciseWithPointsDto> exercises1 = exerciseService.getList(lessonId)
@@ -41,10 +47,11 @@ public class ExerciseApplicationService {
                 .collect(Collectors.toList());
 
         LessonDescriptionDto lesson = lessonService.getLessonInfo(lessonId);
-        String name = null;
+        String filename = null;
         try {
-            name = documentService.createDocument(DocumentFormat.PDF, exercises1, exercises2, lesson);
-            emailService.sendMessageWithList(lesson.getInstructor(), lesson, name);
+            filename = documentService.createDocument(DocumentFormat.PDF, exercises1, exercises2, lesson);
+            Message emailMessage = new LessonListMessage(emailSender, lesson, filename);
+            emailMessage.send(lesson.getInstructor());
         } catch (MessagingException e ) {
             System.err.println("Error sending an student: " + e.getMessage());
             throw new RuntimeException(e);
@@ -52,11 +59,11 @@ public class ExerciseApplicationService {
             System.err.println("Error generating document: " + e.getMessage());
             throw new RuntimeException(e);
         }finally {
-            if (name != null) {
+            if (filename != null) {
                 try {
-                    Files.deleteIfExists(Path.of(name));
+                    Files.deleteIfExists(Path.of(filename));
                 } catch (IOException e) {
-                    System.err.println("Error deleting temp file: " + name);
+                    System.err.println("Error deleting temp file: " + filename);
                     e.printStackTrace();
                 }
             }
@@ -68,8 +75,9 @@ public class ExerciseApplicationService {
     public void recover(RuntimeException  e, Lesson lesson, List<Exercise> exercises1, List<Exercise> exercises2) {
         System.err.println("Error sending list: " + e.getMessage());
         try{
-            emailService.reportErrorToAdmin(e,lesson);
-        }catch(MessagingException e1){
+            Message message = new AdminErrorMessage(emailSender, e, lesson);
+            message.send(adminEmail);
+        }catch(Exception e1){
             System.err.println("Error notifying admin : " + e1.getMessage());
         }
     }
