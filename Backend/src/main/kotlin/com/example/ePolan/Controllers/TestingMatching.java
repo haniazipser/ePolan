@@ -1,6 +1,6 @@
 package com.example.ePolan.Controllers;
 
-import com.example.ePolan.Services.MatchingService;
+import com.example.ePolan.Services.matching.MatchingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
