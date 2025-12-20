@@ -3,7 +3,6 @@ package com.example.ePolan.Services;
 import com.example.ePolan.Model.Dtos.CourseDto;
 import com.example.ePolan.Model.Dtos.NewCourseDto;
 import com.example.ePolan.Model.Dtos.UserDto;
-import com.example.Projekt_IO.Model.Entities.*;
 
 import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.InvitationStatus;

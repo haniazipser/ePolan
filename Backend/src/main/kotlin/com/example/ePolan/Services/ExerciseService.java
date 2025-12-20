@@ -1,6 +1,5 @@
 package com.example.ePolan.Services;
 
-import com.example.Projekt_IO.Model.Dtos.*;
 import com.example.ePolan.Model.Dtos.ExerciseDto;
 import com.example.ePolan.Model.Dtos.ExerciseWithPointsDto;
 import com.example.ePolan.Model.Dtos.PointDto;

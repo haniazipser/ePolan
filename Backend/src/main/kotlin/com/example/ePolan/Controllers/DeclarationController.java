@@ -2,7 +2,6 @@ package com.example.ePolan.Controllers;
 
 import com.example.ePolan.Model.Dtos.DeclarationDto;
 import com.example.ePolan.Model.Dtos.DeclarationShortDto;
-import com.example.Projekt_IO.Services.*;
 import com.example.ePolan.Services.DeclarationService;
 import com.example.ePolan.Services.ExerciseApplicationService;
 import com.example.ePolan.Services.UserInfoService;
