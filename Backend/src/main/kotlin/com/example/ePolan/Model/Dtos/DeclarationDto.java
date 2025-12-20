@@ -17,13 +17,13 @@ public class DeclarationDto {
 
     private ExerciseDto exercise;
 
-    private String student;
+    private UserDto student;
 
     public DeclarationDto(ExerciseDeclaration declaration){
         this.id = declaration.getId();
         this.declarationDate = declaration.getDeclarationDate();
         this.declarationStatus = declaration.getDeclarationStatus();
         this.exercise = new ExerciseDto(declaration.getExercise());
-        this.student = declaration.getStudent();
+        this.student = new UserDto(declaration.getStudent());
     }
 }

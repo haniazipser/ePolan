@@ -14,7 +14,6 @@ import com.example.ePolan.Repositories.CourseRepository;
 
 import com.example.ePolan.Repositories.LessonRepository;
 import com.example.ePolan.Repositories.ParticipantRepository;
-import com.example.ePolan.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ public class CourseService {
     public List<CourseDto> getUsersGroups (){
         User loggedUser = userService.getLoggedUser();
 
-        return courseRepository.findDistinctByStudents_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ACCEPTED)
+        return courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ACCEPTED)
               .stream().map(g -> new CourseDto(g)).sorted(Comparator.comparing(CourseDto::getId)).collect(Collectors.toList());
     }
 
@@ -94,7 +93,7 @@ public class CourseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to add students to this group");
         }
 
-        if (!participantRepository.findByUser_IdAndCourse(userId, course.get()).isEmpty()){
+        if (!participantRepository.findByStudent_IdAndCourse(userId, course.get()).isEmpty()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"This user is already in this course");
         }
 
@@ -117,7 +116,7 @@ public class CourseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to delete students to this group");
         }
 
-        Optional<Participant> participant = participantRepository.findByUser_IdAndCourse(userId, course.get());
+        Optional<Participant> participant = participantRepository.findByStudent_IdAndCourse(userId, course.get());
         if (participant.isEmpty()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"This student is not a member");
         }
@@ -166,7 +165,7 @@ public class CourseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found");
         }
         Participant participant;
-        Optional<Participant> p = participantRepository.findByUser_IdAndCourse(loggedUser.getId(),course.get());
+        Optional<Participant> p = participantRepository.findByStudent_IdAndCourse(loggedUser.getId(),course.get());
         if (p.isEmpty()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You were not invited to this course");
         }
@@ -179,7 +178,7 @@ public class CourseService {
     public List<CourseDto> getUsersArchivedGroups() {
         User loggedUser = userService.getLoggedUser();
 
-        return courseRepository.findDistinctByStudents_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ARCHIVED)
+        return courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ARCHIVED)
                 .stream().map(g -> new CourseDto(g)).sorted(Comparator.comparing(CourseDto::getId)).collect(Collectors.toList());
     }
 

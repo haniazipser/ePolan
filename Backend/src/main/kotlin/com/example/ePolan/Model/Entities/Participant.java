@@ -12,6 +12,7 @@ import java.util.UUID;
 public class Participant {
     @Id
     UUID id;
+    @ManyToOne
     private User student;
     @ManyToOne
     private Course course;

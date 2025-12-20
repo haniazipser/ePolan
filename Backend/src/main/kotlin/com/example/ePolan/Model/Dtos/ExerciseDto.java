@@ -14,14 +14,14 @@ public class ExerciseDto {
     private String groupName;
     private Integer exerciseNumber;
     private String subpoint;
-    private String approvedStudent;
+    private UserDto approvedStudent;
     public ExerciseDto(Exercise exercise){
         this.id=exercise.getId();
         this.classDate = exercise.getLesson().getClassDate();
         this.groupName = exercise.getLesson().getCourse().getName();
         this.exerciseNumber = exercise.getExerciseNumber();
         this.subpoint = exercise.getSubpoint();
-        this.approvedStudent = exercise.getApprovedStudent();
+        this.approvedStudent = new UserDto(exercise.getApprovedStudent());
 
     }
 

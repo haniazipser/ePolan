@@ -16,7 +16,7 @@ public class CourseDto {
     private UUID id;
     private String name;
     private String  instructor;
-    private String creator;
+    private UserDto creator;
     private List<LessonTime> lessonTimes;
     private List<LessonDto> lessons;
     private Instant startDate;
@@ -27,7 +27,7 @@ public class CourseDto {
         this.id = course.getId();
         this.name = course.getName();
         this.instructor = course.getInstructor();
-        this.creator = course.getCreator();
+        this.creator = new UserDto( course.getCreator());
         this.lessonTimes = course.getLessonTimes().stream().toList();
         if (course.getLessons() != null) {
             this.lessons = course.getLessons().stream().map(s -> new LessonDto(s)).sorted(Comparator.comparing(LessonDto::getClassDate)).collect(Collectors.toList());

@@ -14,6 +14,6 @@ import java.util.UUID;
 public interface CourseRepository extends JpaRepository<Course, UUID> {
     Optional<Course> findByCourseCode(String courseCode);
 
-    Set<Course> findDistinctByStudents_IdAndStudents_InvitationStatus(String userId, InvitationStatus invitationStatus);
+    Set<Course> findDistinctByStudents_Student_IdAndStudents_InvitationStatus(String userId, InvitationStatus invitationStatus);
 
 }

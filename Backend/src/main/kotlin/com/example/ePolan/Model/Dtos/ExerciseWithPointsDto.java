@@ -10,13 +10,13 @@ public class ExerciseWithPointsDto {
     private UUID id;
     private Integer exerciseNumber;
     private String subpoint;
-    private String approvedStudent;
+    private UserDto approvedStudent;
     private Double approvedStudentsPoints;
     public ExerciseWithPointsDto(Exercise exercise, Double points){
         this.id=exercise.getId();
         this.exerciseNumber = exercise.getExerciseNumber();
         this.subpoint = exercise.getSubpoint();
-        this.approvedStudent = exercise.getApprovedStudent();
+        this.approvedStudent = new UserDto(exercise.getApprovedStudent());
         this.approvedStudentsPoints = points;
     }
 }

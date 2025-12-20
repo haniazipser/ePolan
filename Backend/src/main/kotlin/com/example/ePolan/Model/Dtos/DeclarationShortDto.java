@@ -8,12 +8,12 @@ import java.util.UUID;
 @Getter
 @Setter
 public class DeclarationShortDto {
-    private String student;
+    private UserDto student;
     private UUID exerciseId;
     private Double pointsInCourse;
 
     public DeclarationShortDto(ExerciseDeclaration exerciseDeclaration, Double points){
-        this.student = exerciseDeclaration.getStudent();
+        this.student = new UserDto(exerciseDeclaration.getStudent());
         this.exerciseId = exerciseDeclaration.getExercise().getId();
         this.pointsInCourse = points;
     }

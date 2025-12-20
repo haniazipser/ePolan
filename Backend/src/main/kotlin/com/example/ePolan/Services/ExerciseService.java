@@ -29,10 +29,6 @@ public class ExerciseService {
                 .collect(Collectors.toList());
     }
 
-    public Set<ExerciseDto> getAssignedExercisesForLesson(String email, UUID id) {
-        return exerciseRepository.findByApprovedStudentAndLesson_Id(email,id).stream().map((e -> new ExerciseDto(e))).collect(Collectors.toSet());
-    }
-
     public void updateExercsie(ExerciseDto exercise) {
         Optional<Exercise> e = exerciseRepository.findById(exercise.getId());
         if (e.isEmpty()){

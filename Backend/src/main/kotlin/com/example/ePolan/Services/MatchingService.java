@@ -56,7 +56,7 @@ public class MatchingService {
 
         // build maps and lists
         for (DeclarationShortDto d : declarations) {
-            String student = d.getStudent();
+            String student = d.getStudent().getId();
             if (!studentMap.containsKey(student)) {
                 studentMap.put(student, nStudents++);
                 studentList.add(student);

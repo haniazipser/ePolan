@@ -18,6 +18,7 @@ public class Course {
     private String name;
     private String  instructor;
 
+    @ManyToOne
     private User creator;
 
     @ElementCollection
