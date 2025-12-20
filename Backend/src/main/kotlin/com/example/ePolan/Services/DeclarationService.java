@@ -6,6 +6,7 @@ import com.example.ePolan.Model.Dtos.DeclarationShortDto;
 import com.example.ePolan.Model.Dtos.PointDto;
 import com.example.ePolan.Model.Entities.Exercise;
 import com.example.ePolan.Model.Entities.ExerciseDeclaration;
+import com.example.ePolan.Model.Entities.User;
 import com.example.ePolan.Repositories.DeclarationRepository;
 import com.example.ePolan.Repositories.ExerciseRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +25,17 @@ import java.util.stream.Collectors;
 public class DeclarationService {
     private  final DeclarationRepository declarationRepository;
     private final ExerciseRepository exerciseRepository;
-    private final PointService pointService;//CZY TO TU MOZE BYC??
-    public void declareExercise(String email, UUID exerciseId) {
+    private final PointService pointService;
+    private final UserService userService;
+    public void declareExercise(UUID exerciseId) {
+        User loggedUser = userService.getLoggedUser();
         ExerciseDeclaration declaration = new ExerciseDeclaration();
         Optional<Exercise> exercise = exerciseRepository.findById(exerciseId);
         if (exercise.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found");
         }else if(exercise.get().getLesson().getClassDate().isBefore(Instant.now())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not declare exercises frm past lessons");
-        }else if (!exercise.get().getLesson().getCourse().isStudentAMemeber(email)){
+        }else if (!exercise.get().getLesson().getCourse().isStudentAMemeber(loggedUser)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tou are not a member of this course");
         }else if (exercise.get().getLesson().getHoursToLesson() < 12){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can no longer declare exercises");
@@ -40,29 +43,19 @@ public class DeclarationService {
 
         declaration.setExercise(exercise.get());
         declaration.setDeclarationDate(Instant.now());
-        declaration.setStudent(email);
+        declaration.setStudent(loggedUser);
         declaration.setDeclarationStatus(DeclarationStatus.WAITING);
         declarationRepository.save(declaration);
     }
 
-    public List<DeclarationDto> getUsersDeclarations(String email) {
-        return declarationRepository.findByStudent(email).stream().map(d -> new DeclarationDto(d)).sorted(Comparator.comparing(DeclarationDto::getId)).collect(Collectors.toList());
+    public List<DeclarationDto> getUsersDeclarations() {
+        User loggedUser = userService.getLoggedUser();
+        return declarationRepository.findByStudent(loggedUser).stream().map(d -> new DeclarationDto(d)).sorted(Comparator.comparing(DeclarationDto::getId)).collect(Collectors.toList());
     }
 
-    public void runMatchingAlgorithm(){
-        //nasz algorytm jak dopasuje exercise, student musi zrobic:
-       /* Exercise exercise = exerciseRepository.findById(exerciseId);
-        exercise.setApprovedStudent(email);
-        Set<ExerciseDeclaration> rejectedDeclarations = declarationRepository.findByExercise_Id(exerciseId);
-        for (ExerciseDeclaration r : rejectedDeclarations){
-            r.setDeclarationStatus(DeclarationStatus.REJECTED);
-            declarationRepository.save(r);
-        }*/
-
-    }
-
-    public List<DeclarationDto> getDeclarationsForLesson(String email, UUID id) {
-        return declarationRepository.findByStudentAndExercise_Lesson_Id(email,id)
+    public List<DeclarationDto> getDeclarationsForLesson( UUID id) {
+        User loggedUser = userService.getLoggedUser();
+        return declarationRepository.findByStudentAndExercise_Lesson_Id(loggedUser,id)
                 .stream().map(d -> new DeclarationDto(d)).sorted(Comparator.comparing(DeclarationDto::getId)).collect(Collectors.toList());
     }
 
@@ -85,12 +78,9 @@ public class DeclarationService {
         }
     }
 
-    public Integer getDeclarationsForSessionCount(String email, UUID id) {
-        return declarationRepository.countByStudentAndExercise_Lesson_Id(email,id);
-    }
-
-    public List<DeclarationDto> getUsersDeclarationsInCourse(String email, UUID courseId) {
-        return declarationRepository.findByStudentAndExercise_Lesson_Course_Id(email,courseId)
+    public List<DeclarationDto> getUsersDeclarationsInCourse(UUID courseId) {
+        User loggedUser = userService.getLoggedUser();
+        return declarationRepository.findByStudentAndExercise_Lesson_Course_Id(loggedUser,courseId)
                 .stream().map(d -> new DeclarationDto(d)).sorted(Comparator.comparing(DeclarationDto::getId)).collect(Collectors.toList());
     }
 

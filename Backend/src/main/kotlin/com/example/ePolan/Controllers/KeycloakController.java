@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class KeycloakController {
     private final KeycloakClientService keycloakClientService;
-    @GetMapping("/user-info/{email}")
+    @GetMapping("/user-info/{student}")
     public Mono<String> getUserInfo(@PathVariable String email) {
         return keycloakClientService.getUserByEmail(email);
     }

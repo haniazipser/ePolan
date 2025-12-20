@@ -12,7 +12,7 @@ import java.util.UUID;
 public class Participant {
     @Id
     UUID id;
-    private String email;
+    private User student;
     @ManyToOne
     private Course course;
 

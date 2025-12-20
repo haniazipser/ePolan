@@ -12,10 +12,11 @@ import java.util.UUID;
 public class Point {
     @Id
     private UUID id;
-    private String student;
+    @ManyToOne
+    private User student;
     @ManyToOne
     private Lesson lesson;
-    private Double activityValue;//jesli zmieniam nazwe tutaj
+    private Double activityValue;
     public Point(){};
 
     @PrePersist

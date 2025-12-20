@@ -38,8 +38,8 @@ public class CourseApplicationService {
         }
     }
 
-   /* public Set<TaskDto> getStudentsTasks(String email){
-        Set<CourseDto> groups = groupClassService.getUsersGroups(email);
+   /* public Set<TaskDto> getStudentsTasks(String student){
+        Set<CourseDto> groups = groupClassService.getUsersGroups(student);
         Set<TaskDto> tasks = new HashSet<>();
         for (CourseDto g : groups)   {
             LessonDto s = lessonService.getNextLesson(g.getId());
@@ -47,9 +47,9 @@ public class CourseApplicationService {
             task.setCourseName(g.getName());
             task.setGroupId(g.getId());
             task.setDueDate(s.getClassDate());
-            Integer count = declarationService.getDeclarationsForSessionCount(email, s.getId());
+            Integer count = declarationService.getDeclarationsForSessionCount(student, s.getId());
             task.setNumberOfDeclarations(count);
-            Set<ExerciseDto> assigned = exerciseService.getAssignedExercisesForLesson(email, s.getId());
+            Set<ExerciseDto> assigned = exerciseService.getAssignedExercisesForLesson(student, s.getId());
             task.setAssigned(assigned);
             tasks.add(task);
         }

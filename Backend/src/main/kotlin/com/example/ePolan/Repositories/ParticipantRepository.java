@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface ParticipantRepository extends JpaRepository<Participant, UUID> {
 
-    Optional<Participant> findByEmailAndCourse(String email, Course course);
+    Optional<Participant> findByUser_IdAndCourse(String userId, Course course);
 
     Set<Participant> findByCourseAndInvitationStatus(Course course, InvitationStatus invitationStatus);
 

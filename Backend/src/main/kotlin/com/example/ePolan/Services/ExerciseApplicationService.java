@@ -46,7 +46,7 @@ public class ExerciseApplicationService {
             name = documentService.createDocument(DocumentFormat.PDF, exercises1, exercises2, lesson);
             emailService.sendMessageWithList(lesson.getInstructor(), lesson, name);
         } catch (MessagingException e ) {
-            System.err.println("Error sending an email: " + e.getMessage());
+            System.err.println("Error sending an student: " + e.getMessage());
             throw new RuntimeException(e);
         } catch (Exception e){
             System.err.println("Error generating document: " + e.getMessage());

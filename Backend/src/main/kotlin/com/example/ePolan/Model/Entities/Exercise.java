@@ -21,7 +21,8 @@ public class Exercise {
     @OneToMany(mappedBy = "exercise")
     private Set<ExerciseDeclaration> declarations;
 
-    private String approvedStudent;
+    @ManyToOne
+    private User approvedStudent;
 
     public Exercise(){}
 

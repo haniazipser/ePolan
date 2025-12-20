@@ -17,14 +17,15 @@ public class Course {
     private UUID id;
     private String name;
     private String  instructor;
-    private String creator;
+
+    private User creator;
+
     @ElementCollection
     private Set<LessonTime> lessonTimes;
 
     @OneToMany(mappedBy = "course",cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Lesson> lessons;
 
-    //private Set<String> students;
     @OneToMany(mappedBy = "course")
     private Set<Participant> students;
     private Instant startDate;
@@ -57,15 +58,19 @@ public class Course {
         return nextLessonInstant;
     }
 
-    public boolean isStudentAMemeber(String email){
+    public boolean isStudentAMemeber(User user){
         boolean found = false;
         for (Participant student : students){
-            if (student.getEmail().toLowerCase().equals(email)){
+            if (student.getStudent().getId().equals(user.getId())){
                 found = true;
                 break;
             }
         }
         return found;
+    }
+
+    public boolean isStudentACreator(User user){
+        return creator.getId().equals(user.getId());
     }
 
 }

@@ -6,6 +6,7 @@ import com.example.ePolan.Model.Dtos.ExerciseDto;
 import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.Lesson;
 import com.example.ePolan.Model.Entities.Exercise;
+import com.example.ePolan.Model.Entities.User;
 import com.example.ePolan.Repositories.CourseRepository;
 import com.example.ePolan.Repositories.LessonRepository;
 import com.example.ePolan.Repositories.ExerciseRepository;
@@ -28,6 +29,7 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final ExerciseRepository exerciseRepository;
     private final CourseRepository courseRepository;
+    private final UserService userService;
 
     public LessonDto addNewLesson(UUID courseId, Instant date){
         Optional<Course> c = courseRepository.findById(courseId);
@@ -42,14 +44,6 @@ public class LessonService {
         return new LessonDto(lesson);
     }
 
-    public LessonDto getNextLesson(UUID courseId){
-        Optional<Lesson> lesson = lessonRepository.findTopByCourse_IdAndClassDateAfterOrderByClassDateAsc(courseId, Instant.now());
-        if (lesson.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "There are no future lessons added for this group");
-        }
-        return new LessonDto(lesson.get());
-    }
-
     public void deleteLesson(UUID lessonId) {
         Optional<Lesson> lesson = lessonRepository.findById(lessonId);
         if (lesson.isEmpty()){
@@ -60,11 +54,12 @@ public class LessonService {
         lessonRepository.delete(lesson.get());
     }
 
-    public List<LessonDto> getLessonsForCourse(UUID courseId, String email) {
+    public List<LessonDto> getLessonsForCourse(UUID courseId) {
+        User loggedUser = userService.getLoggedUser();
         Optional<Course> course = courseRepository.findById(courseId);
         if (course.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found");
-        } else if (!course.get().isStudentAMemeber(email)){
+        } else if (!course.get().isStudentAMemeber(loggedUser)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this course");
         }
 

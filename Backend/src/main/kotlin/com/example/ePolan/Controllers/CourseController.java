@@ -2,9 +2,9 @@ package com.example.ePolan.Controllers;
 
 import com.example.ePolan.Model.Dtos.CourseDto;
 import com.example.ePolan.Model.Dtos.NewCourseDto;
+import com.example.ePolan.Model.Dtos.UserDto;
 import com.example.ePolan.Services.CourseApplicationService;
 import com.example.ePolan.Services.CourseService;
-import com.example.ePolan.Services.UserInfoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
@@ -22,29 +22,25 @@ public class CourseController {
 
     private final CourseService courseService;
     private final CourseApplicationService courseApplicationService;
-    private final UserInfoService userInfoService;
     @PostMapping("/create")
     public CourseDto createGroup(@Valid @RequestBody NewCourseDto newCourseDto){
-        String email = userInfoService.getLoggedUserInfo().getEmail();
-        return courseService.createCourse(email, newCourseDto);
+        return courseService.createCourse(newCourseDto);
     }
 
     @GetMapping("/courses")
     public ResponseEntity<List<CourseDto>> getStudentGroups(){
-        String email = userInfoService.getLoggedUserInfo().getEmail();
         return ResponseEntity
                 .ok()
                 .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
-                .body(courseService.getUsersGroups(email));
+                .body(courseService.getUsersGroups());
     }
 
     @GetMapping("/courses/archived")
     public ResponseEntity<List<CourseDto>> getStudentArchivedGroups(){
-        String email = userInfoService.getLoggedUserInfo().getEmail();
         return ResponseEntity
                 .ok()
                 .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS).mustRevalidate())
-                .body(courseService.getUsersArchivedGroups(email));
+                .body(courseService.getUsersArchivedGroups());
     }
 
     @PutMapping("/{courseId}")
@@ -53,16 +49,16 @@ public class CourseController {
     }
 
     @GetMapping("{courseId}/students")
-    public ResponseEntity<List<String>> getStudentsInGroup(@PathVariable UUID courseId){
+    public ResponseEntity<List<UserDto>> getStudentsInGroup(@PathVariable UUID courseId){
         return ResponseEntity
                 .ok()
                 .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
                 .body(courseService.getStudentsInGroup(courseId));
     }
 
-    @PostMapping("/{email}/{courseId}")
-    public void addStudentToCourse(@PathVariable String email, @PathVariable UUID courseId){
-        courseApplicationService.addStudentToGroup(email, courseId);
+    @PostMapping("/{userId}/{courseId}")
+    public void addStudentToCourse(@PathVariable String userId, @PathVariable UUID courseId){
+        courseApplicationService.addStudentToGroup(userId, courseId);
     }
 
     @PostMapping("/{groupCode}")
@@ -70,9 +66,9 @@ public class CourseController {
         courseService.joinCourse(groupCode);
     }
 
-    @DeleteMapping("/{email}/{courseId}")
-    public void deleteStudentFromGroup(@PathVariable String email, @PathVariable UUID courseId){
-        courseService.deleteStudentFromGroup(email,courseId);
+    @DeleteMapping("/{userId}/{courseId}")
+    public void deleteStudentFromGroup(@PathVariable String userId, @PathVariable UUID courseId){
+        courseService.deleteStudentFromGroup(userId,courseId);
     }
 
     @DeleteMapping("/{courseId}")

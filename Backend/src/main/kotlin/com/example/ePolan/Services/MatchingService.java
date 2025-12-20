@@ -2,6 +2,7 @@ package com.example.ePolan.Services;
 
 import com.example.ePolan.Model.Dtos.DeclarationShortDto;
 import com.example.ePolan.Model.Entities.Exercise;
+import com.example.ePolan.Model.Entities.User;
 import com.example.ePolan.Repositories.ExerciseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class MatchingService {
     private final ExerciseRepository exerciseRepository;
     private final LessonService lessonService;
     private final ExerciseApplicationService exerciseApplicationService;
+    private final UserService userService;
 
     @Scheduled(cron = "0 37 21 * * ?")
     @Transactional
@@ -91,7 +93,8 @@ public class MatchingService {
                 .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Exercise not found: " + taskId));
 
-            ex.setApprovedStudent(studentId);
+            User user = userService.getUserById(studentId);
+            ex.setApprovedStudent(user);
             declarationService.rejectDeclarationsForExercise(taskId);
             exerciseRepository.save(ex);
         }

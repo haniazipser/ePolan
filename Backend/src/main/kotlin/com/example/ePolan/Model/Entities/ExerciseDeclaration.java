@@ -21,7 +21,8 @@ public class ExerciseDeclaration {
     @ManyToOne
     private Exercise exercise;
 
-    private String student;
+    @ManyToOne
+    private User student;
 
     public ExerciseDeclaration(){};
     @PrePersist

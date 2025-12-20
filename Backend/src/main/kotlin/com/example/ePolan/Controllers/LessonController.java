@@ -4,7 +4,6 @@ import com.example.ePolan.Model.Dtos.ExerciseDto;
 import com.example.ePolan.Model.Dtos.LessonDto;
 import com.example.ePolan.Services.LessonService;
 import com.example.ePolan.Services.ExerciseService;
-import com.example.ePolan.Services.UserInfoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
@@ -22,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 public class LessonController {
     private final ExerciseService exerciseService;
     private final LessonService lessonService;
-    private final UserInfoService userInfoService;
     @GetMapping("/{lessonId}/exercises")
     public ResponseEntity<List<ExerciseDto>> getExercisesForLesson(@PathVariable UUID lessonId){
         return ResponseEntity
@@ -38,11 +36,11 @@ public class LessonController {
 
     @GetMapping("/{courseId}/lessons")
     public ResponseEntity<List<LessonDto>> getLessonsForCourse (@PathVariable UUID courseId){
-        String email = userInfoService.getLoggedUserInfo().getEmail();
+
         return ResponseEntity
                 .ok()
                 .cacheControl(CacheControl.maxAge(10, TimeUnit.DAYS))
-                .body(lessonService.getLessonsForCourse(courseId, email));
+                .body(lessonService.getLessonsForCourse(courseId));
     }
 
    @PutMapping("/exercises")

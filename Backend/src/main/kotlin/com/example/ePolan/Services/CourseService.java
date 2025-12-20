@@ -9,10 +9,12 @@ import com.example.ePolan.Model.Entities.InvitationStatus;
 import com.example.ePolan.Model.Entities.Lesson;
 import com.example.ePolan.Model.Entities.LessonTime;
 import com.example.ePolan.Model.Entities.Participant;
+import com.example.ePolan.Model.Entities.User;
 import com.example.ePolan.Repositories.CourseRepository;
 
 import com.example.ePolan.Repositories.LessonRepository;
 import com.example.ePolan.Repositories.ParticipantRepository;
+import com.example.ePolan.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,16 +35,20 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final ParticipantRepository participantRepository;
     private final LessonRepository lessonRepository;
-    private final UserInfoService userInfoService;
+    private final UserService userService;
     Logger logger = LoggerFactory.getLogger(CourseService.class);
-    public List<CourseDto> getUsersGroups (String email){
-      return courseRepository.findDistinctByStudents_EmailAndStudents_InvitationStatus(email, InvitationStatus.ACCEPTED)
+    public List<CourseDto> getUsersGroups (){
+        User loggedUser = userService.getLoggedUser();
+
+        return courseRepository.findDistinctByStudents_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ACCEPTED)
               .stream().map(g -> new CourseDto(g)).sorted(Comparator.comparing(CourseDto::getId)).collect(Collectors.toList());
     }
 
-    public CourseDto createCourse(String email, NewCourseDto courseDto) {
+    public CourseDto createCourse(NewCourseDto courseDto) {
+        User loggedUser = userService.getLoggedUser();
+
         Course course = new Course();
-        course.setCreator(email);
+        course.setCreator(loggedUser);
         course.setLessonTimes(courseDto.getLessonTimes());
         course.setName(courseDto.getName());
         course.setInstructor(courseDto.getInstructor());
@@ -73,43 +79,45 @@ public class CourseService {
 
         Participant participant = new Participant();
         participant.setCourse(course);
-        participant.setEmail(email);
+        participant.setStudent(loggedUser);
         participant.setInvitationStatus(InvitationStatus.ACCEPTED);
         participantRepository.save(participant);
         return new CourseDto(course);
     }
 
-    public void addStudentToGroup(String email, UUID courseId) {
+    public void addStudentToGroup(String userId, UUID courseId) {
         Optional<Course> course = courseRepository.findById(courseId);
-        UserDto loggedUser = userInfoService.getLoggedUserInfo();
+        User loggedUser = userService.getLoggedUser();
         if (course.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found");
-        }else if (!course.get().getCreator().toLowerCase().equals(  loggedUser.getEmail().toLowerCase().toLowerCase())){
+        }else if (!course.get().isStudentACreator(loggedUser)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to add students to this group");
         }
 
-        if (!participantRepository.findByEmailAndCourse(email,course.get()).isEmpty()){
+        if (!participantRepository.findByUser_IdAndCourse(userId, course.get()).isEmpty()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"This user is already in this course");
         }
 
+        User student = userService.getUserById(userId);
+
         Participant participant = new Participant();
-        participant.setEmail(email);
+        participant.setStudent(student);
         participant.setCourse(course.get());
         participant.setInvitationStatus(InvitationStatus.WAITING);
 
         participantRepository.save(participant);
     }
 
-    public void deleteStudentFromGroup(String email, UUID groupId) {
+    public void deleteStudentFromGroup(String userId, UUID groupId) {
         Optional<Course> course = courseRepository.findById(groupId);
-        UserDto loggedUser = userInfoService.getLoggedUserInfo();
+        User loggedUser = userService.getLoggedUser();
         if (course.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found");
-        }else if (!course.get().getCreator().toLowerCase().equals(  loggedUser.getEmail().toLowerCase().toLowerCase())){
+        }else if (course.get().isStudentACreator(loggedUser)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to delete students to this group");
         }
 
-        Optional<Participant> participant = participantRepository.findByEmailAndCourse(email,course.get());
+        Optional<Participant> participant = participantRepository.findByUser_IdAndCourse(userId, course.get());
         if (participant.isEmpty()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"This student is not a member");
         }
@@ -117,17 +125,20 @@ public class CourseService {
         participantRepository.delete(participant.get());
     }
 
-    public List<String> getStudentsInGroup(UUID groupId) {
+    public List<UserDto> getStudentsInGroup(UUID groupId) {
         Optional<Course> course = courseRepository.findById(groupId);
-        UserDto loggedUser = userInfoService.getLoggedUserInfo();
+        User loggedUser = userService.getLoggedUser();
 
         if (course.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found");
-        }else if (!course.get().isStudentAMemeber(loggedUser.getEmail())){
+        }else if (!course.get().isStudentAMemeber(loggedUser)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not a member of this group");
         }
 
-        return participantRepository.findByCourseAndInvitationStatus(course.get(), InvitationStatus.ACCEPTED).stream().map(s -> s.getEmail()).sorted().collect(Collectors.toList());
+        return participantRepository
+                .findByCourseAndInvitationStatus(course.get(), InvitationStatus.ACCEPTED)
+                .stream()
+                .map(p -> new UserDto(p.getStudent())).collect(Collectors.toList());
     }
 
     public CourseDto getGroupInfo(UUID groupId){
@@ -137,9 +148,9 @@ public class CourseService {
 
     public void archiveCourse(UUID courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
-        UserDto loggedUser = userInfoService.getLoggedUserInfo();
+        User loggedUser = userService.getLoggedUser();
        for (Participant p : course.getStudents()) {
-           if (p.getEmail().toLowerCase().equals(loggedUser.getEmail().toLowerCase())) {
+           if (p.getStudent().getId().equals(loggedUser.getId())) {
                 p.setInvitationStatus(InvitationStatus.ARCHIVED);
                 participantRepository.save(p);
                 break;
@@ -149,13 +160,13 @@ public class CourseService {
 
     public void joinCourse(String groupCode) {
         Optional<Course> course = courseRepository.findByCourseCode(groupCode);
-        UserDto loggedUser = userInfoService.getLoggedUserInfo();
+        User loggedUser = userService.getLoggedUser();
 
         if (course.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found");
         }
         Participant participant;
-        Optional<Participant> p = participantRepository.findByEmailAndCourse(loggedUser.getEmail(),course.get());
+        Optional<Participant> p = participantRepository.findByUser_IdAndCourse(loggedUser.getId(),course.get());
         if (p.isEmpty()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You were not invited to this course");
         }
@@ -165,16 +176,18 @@ public class CourseService {
 
     }
 
-    public List<CourseDto> getUsersArchivedGroups(String email) {
-        return courseRepository.findDistinctByStudents_EmailAndStudents_InvitationStatus(email, InvitationStatus.ARCHIVED)
+    public List<CourseDto> getUsersArchivedGroups() {
+        User loggedUser = userService.getLoggedUser();
+
+        return courseRepository.findDistinctByStudents_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ARCHIVED)
                 .stream().map(g -> new CourseDto(g)).sorted(Comparator.comparing(CourseDto::getId)).collect(Collectors.toList());
     }
 
     public void unarchiveCourse(UUID courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
-        UserDto loggedUser = userInfoService.getLoggedUserInfo();
+        User loggedUser = userService.getLoggedUser();
         for (Participant p : course.getStudents()) {
-            if (p.getEmail().toLowerCase().equals(loggedUser.getEmail().toLowerCase())) {
+            if (p.getStudent().getId().equals(loggedUser.getId())) {
                 p.setInvitationStatus(InvitationStatus.ACCEPTED);
                 participantRepository.save(p);
                 break;

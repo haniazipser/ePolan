@@ -2,6 +2,7 @@ package com.example.ePolan.Repositories;
 
 import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.InvitationStatus;
+import com.example.ePolan.Model.Entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +14,6 @@ import java.util.UUID;
 public interface CourseRepository extends JpaRepository<Course, UUID> {
     Optional<Course> findByCourseCode(String courseCode);
 
-    Set<Course> findDistinctByStudents_EmailAndStudents_InvitationStatus(String email, InvitationStatus invitationStatus);
+    Set<Course> findDistinctByStudents_IdAndStudents_InvitationStatus(String userId, InvitationStatus invitationStatus);
 
 }
