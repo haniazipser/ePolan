@@ -1,0 +1,98 @@
+@startuml
+class Services.filegenerator.PdfParagraphBuilder {
+- List<Chunk> chunks
+- float spacingBefore
+- float spacingAfter
+- int alignment
+- float indentationLeft
+- float indentationRight
+- float firstLineIndent
+- float leading
+- boolean addLineSeparator
+- float lineSeparatorOffset
++ {static} PdfParagraphBuilder create()
++ PdfParagraphBuilder addText(String,Font)
++ PdfParagraphBuilder addText(String)
++ PdfParagraphBuilder addChunk(Chunk)
++ PdfParagraphBuilder addTexts(String[],Font[])
++ PdfParagraphBuilder withSpacingAfter(float)
++ PdfParagraphBuilder withSpacingBefore(float)
++ PdfParagraphBuilder withSpacing(float)
++ PdfParagraphBuilder withAlignment(int)
++ PdfParagraphBuilder centered()
++ PdfParagraphBuilder rightAligned()
++ PdfParagraphBuilder justified()
++ PdfParagraphBuilder withIndentationLeft(float)
++ PdfParagraphBuilder withIndentationRight(float)
++ PdfParagraphBuilder withFirstLineIndent(float)
++ PdfParagraphBuilder withLeading(float)
++ PdfParagraphBuilder withLineSeparator(float)
++ PdfParagraphBuilder withLineSeparator()
++ Paragraph build()
++ Element[] buildWithElements()
++ void addTo(Document)
+}
+
+
+class Services.filegenerator.PdfDocumentGenerator {
+- Document document
+- Font titleFont
+- Font subtitleFont
+- Font exerciseFont
+- Font userFont
+# void initializeDocument(String)
+# void addHeader(LessonDescriptionDto)
+# void addByPointsSection(List<ExerciseWithPointsDto>)
+# void addByExercisesSection(List<ExerciseWithPointsDto>)
+# void startNewPage()
+# void closeDocument()
++ String getFileExtension()
+}
+
+
+abstract class Services.filegenerator.BaseDocumentGenerator {
++ String generateDocument(List<ExerciseWithPointsDto>,List<ExerciseWithPointsDto>,LessonDescriptionDto)
+# {abstract}void initializeDocument(String)
+# {abstract}void addHeader(LessonDescriptionDto)
+# {abstract}void addByPointsSection(List<ExerciseWithPointsDto>)
+# {abstract}void addByExercisesSection(List<ExerciseWithPointsDto>)
+# {abstract}void startNewPage()
+# {abstract}void closeDocument()
+# String createFilename(LessonDescriptionDto)
+}
+
+enum Services.filegenerator.DocumentFormat {
++  PDF
++  CSV
+}
+
+interface Services.filegenerator.DocumentGenerator {
+~ String generateDocument(List<ExerciseWithPointsDto>,List<ExerciseWithPointsDto>,LessonDescriptionDto)
+~ String getFileExtension()
+}
+
+class Services.filegenerator.DocumentService {
+- Map<DocumentFormat,DocumentGenerator> generators
++ String createDocument(DocumentFormat,List<ExerciseWithPointsDto>,List<ExerciseWithPointsDto>,LessonDescriptionDto)
+}
+
+
+
+
+Services.filegenerator.BaseDocumentGenerator <|-- Services.filegenerator.PdfDocumentGenerator
+Services.filegenerator.DocumentGenerator <|.. Services.filegenerator.BaseDocumentGenerator
+
+DocumentService *-- DocumentGenerator : generators
+PdfDocumentGenerator ..> PdfParagraphBuilder : uses
+PdfDocumentGenerator ..> DocumentFormat : uses
+
+
+
+note left of Services.filegenerator.BaseDocumentGenerator
+Template method
+end note
+
+note left of Services.filegenerator.DocumentService
+Strategy pattern
+end note
+@enduml

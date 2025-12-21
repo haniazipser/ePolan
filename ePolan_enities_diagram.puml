@@ -1,0 +1,122 @@
+@startuml
+left to right direction
+
+class User
+class Course
+class Lesson
+
+Participant --> InvitationStatus
+ExerciseDeclaration --> DeclarationStatus
+
+class User {
+- String id
+- String firstName
+- String lastName
+- String email
+- List<Course> createdCourses
+- List<Point> activity
+- List<ExerciseDeclaration> declarations
+- List<Exercise> approvedExercises
+}
+
+enum InvitationStatus {
++  ARCHIVED
++  ACCEPTED
++  REJECTED
++  WAITING
+}
+
+class Course {
+- UUID id
+- String name
+- String instructor
+- User creator
+- Set<LessonTime> lessonTimes
+- Set<Lesson> lessons
+- Set<Participant> students
+- Instant startDate
+- Instant endDate
+- Integer frequency
+- String courseCode
++ Instant getFirstLesson(LessonTime)
++ boolean isStudentAMemeber(User)
++ boolean isStudentACreator(User)
+}
+
+
+class Exercise {
+- UUID id
+- Lesson lesson
+- Integer exerciseNumber
+- String subpoint
+- Set<ExerciseDeclaration> declarations
+- User approvedStudent
+}
+
+
+class Point {
+- UUID id
+- User student
+- Lesson lesson
+- Double activityValue
+}
+
+
+class LessonTime {
+- DayOfWeek dayOfWeek
+}
+
+
+class Participant {
+~ UUID id
+- User student
+- Course course
+- InvitationStatus invitationStatus
+}
+
+
+class ExerciseDeclaration {
+- UUID id
+- Instant declarationDate
+- DeclarationStatus declarationStatus
+- Exercise exercise
+- User student
+}
+
+
+enum DeclarationStatus {
++  WAITING
++  REJECTED
++  APPROVED
++  CANCELLED
+}
+
+class Lesson {
+- UUID id
+- Instant classDate
+- Course course
+- Set<Exercise> lessonExercises
++ LessonStatus getLessonStatus()
++ long getHoursToLesson()
+}
+
+User "1" *-- "0..*" Course : createdCourses
+User "1" *-- "0..*" Point : activityPoints
+User "1" *-- "0..*" ExerciseDeclaration : exerciseDeclarations
+User "1" o-- "0..*" Exercise : approvedExercises
+
+Course "1" *-- "0..*" LessonTime
+Course "1" *-- "0..*" Lesson
+Course "1" *-- "1..*" Participant
+
+Lesson "1" *-- "0..*" Exercise
+
+Point "*" o-- "1" Lesson
+
+Participant "*" o-- "1" User
+
+ExerciseDeclaration "*" o-- "1" Exercise
+
+
+
+@enduml
