@@ -1,5 +1,7 @@
 package com.example.ePolan.Services;
 
+import com.example.ePolan.CourseGenerator;
+import com.example.ePolan.LessonGenerator;
 import com.example.ePolan.Model.Dtos.CourseDto;
 import com.example.ePolan.Model.Dtos.NewCourseDto;
 import com.example.ePolan.Model.Dtos.UserDto;
@@ -35,7 +37,8 @@ public class CourseService {
     private final ParticipantRepository participantRepository;
     private final LessonRepository lessonRepository;
     private final UserService userService;
-    Logger logger = LoggerFactory.getLogger(CourseService.class);
+    private final CourseGenerator courseGenerator;
+    private final LessonGenerator lessonGenerator;
     public List<CourseDto> getUsersGroups (){
         User loggedUser = userService.getLoggedUser();
 
@@ -46,34 +49,11 @@ public class CourseService {
     public CourseDto createCourse(NewCourseDto courseDto) {
         User loggedUser = userService.getLoggedUser();
 
-        Course course = new Course();
-        course.setCreator(loggedUser);
-        course.setLessonTimes(courseDto.getLessonTimes());
-        course.setName(courseDto.getName());
-        course.setInstructor(courseDto.getInstructor());
-        course.setStartDate(courseDto.getStartDate());
-        course.setEndDate(courseDto.getEndDate());
-        course.setFrequency(courseDto.getFrequency());
-        course.setCourseCode(UUID.randomUUID().toString());
+        Course course = courseGenerator.create(courseDto, loggedUser);
 
         course = courseRepository.save(course);
 
-        Set<Lesson> lessons = new HashSet<>();
-
-        Instant endDate = courseDto.getEndDate();
-        for (LessonTime lessonTime : course.getLessonTimes()) {
-            Instant next = course.getFirstLesson(lessonTime);
-            System.out.println("Dodaję lekcję: " + next);
-            while (next.isBefore(endDate)){
-                Lesson lesson = new Lesson();
-                lesson.setClassDate(next);
-                lesson.setCourse(course);
-                lesson.setLessonExercises(Collections.emptySet());
-                lessonRepository.save(lesson);
-                lessons.add(lesson);
-                next  = next.plus(7 * course.getFrequency(), ChronoUnit.DAYS);
-            }
-        }
+        Set<Lesson> lessons = lessonGenerator.generateLessons(course);
         course.setLessons(lessons);
 
         Participant participant = new Participant();
