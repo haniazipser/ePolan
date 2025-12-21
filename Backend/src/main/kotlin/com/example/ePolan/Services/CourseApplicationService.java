@@ -33,7 +33,6 @@ public class CourseApplicationService {
         try {
             message.send(email);
         } catch (Exception e) {
-            // log / error handling
             System.out.println("Error sending invitation");
         }
     }

@@ -102,21 +102,4 @@ public class LessonService {
 
         return lessonRepository.findLessonIdsByClassDateBetween(startOfDay, endOfDay);
     }
-/*
-    public void updateExercisesForLesson(LessonDto lessonDto) {
-        Optional<Lesson> l = lessonRepository.findById(lessonDto.getId());
-        if (l.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lesson not found");
-        }
-        Lesson lesson = l.get();
-        Set<Exercise> exercises;
-        for (ExerciseDto e : lessonDto.getExercises()){
-            Exercise exercise = new Exercise();
-            exercise.setLesson(lesson);
-            exercise.setExerciseNumber(e.getExerciseNumber());
-            exercise.setSubpoint(e.getSubpoint());
-            exerciseRepository.save()
-        }
-
-    }*/
 }
