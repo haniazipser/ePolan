@@ -1,12 +1,13 @@
 --User
 INSERT INTO keycloak_user (id, first_name, last_name, email)
 VALUES
-('a1111111-2222-4333-8444-555555555577','Hanna', 'Zipser', 'admin@uni.edu');
+('d44dd19d-0771-4242-bc3e-49ae0f58abb9','Hania', 'Zipser', 'haniazipser2004@gmail.com'),
+('1f911534-28c8-4ae0-8ab1-452a3c3408c7','Ania', 'kot', 'ania@gmail.com');
 
 -- Kurs
 INSERT INTO course (id, name, instructor, creator_id, start_date, end_date, frequency, course_code)
 VALUES
-('a1111111-2222-4333-8444-555555555555','Advanced Algorithms', 'dr.brecht@uni.edu', 'a1111111-2222-4333-8444-555555555577', '2025-03-01 00:00:00', '2025-07-31 00:00:00', 1, '110fb02f-4514-40d3-8398-9d1d517b0ebc');
+('a1111111-2222-4333-8444-555555555555','Advanced Algorithms', 'dr.brecht@uni.edu', 'd44dd19d-0771-4242-bc3e-49ae0f58abb9', '2025-03-01 00:00:00', '2025-07-31 00:00:00', 1, '110fb02f-4514-40d3-8398-9d1d517b0ebc');
 
 -- Dni tygodnia
 INSERT INTO course_lesson_times (course_id, day_of_week)
@@ -16,7 +17,7 @@ VALUES
 -- Uczestnik
 INSERT INTO participant(id, student_id, course_id, invitation_status)
 VALUES
-('d4f5e6e7-1234-4567-89ab-101112131415', 'a1111111-2222-4333-8444-555555555577', 'a1111111-2222-4333-8444-555555555555', 'ACCEPTED');
+('d4f5e6e7-1234-4567-89ab-101112131415', 'd44dd19d-0771-4242-bc3e-49ae0f58abb9', 'a1111111-2222-4333-8444-555555555555', 'ACCEPTED');
 
 -- LEKCJE
 INSERT INTO lesson (id, class_date, course_id)
@@ -32,10 +33,10 @@ VALUES
 INSERT INTO exercise (id, lesson_id, exercise_number, subpoint, approved_student_id)
 VALUES
 -- PAST
-('b0457de3-f1d4-4c5e-84c5-4f5aa3a259a7','02f5fc3a-f339-432f-a97d-f58be7cfb500', 1, 'a', 'a1111111-2222-4333-8444-555555555577'),
+('b0457de3-f1d4-4c5e-84c5-4f5aa3a259a7','02f5fc3a-f339-432f-a97d-f58be7cfb500', 1, 'a', 'd44dd19d-0771-4242-bc3e-49ae0f58abb9'),
 ('f938c49d-b1d2-4e1b-a5a2-9f0e071d582f','02f5fc3a-f339-432f-a97d-f58be7cfb500', 2, NULL, NULL),
 ('6a2f8499-3fc3-45d1-bdfb-dc55d402b865','b32fa49b-b885-4911-aac2-2910b04817b4', 1, 'a', NULL),
-('35d8ec74-5c29-4d09-b6f1-46df38d38d87','b32fa49b-b885-4911-aac2-2910b04817b4', 2, NULL, 'a1111111-2222-4333-8444-555555555577'),
+('35d8ec74-5c29-4d09-b6f1-46df38d38d87','b32fa49b-b885-4911-aac2-2910b04817b4', 2, NULL, 'd44dd19d-0771-4242-bc3e-49ae0f58abb9'),
 -- NEAR
 ('ed998758-7207-4a33-b9be-ec33ec137a5e','31ac5c2d-761e-4d5c-96ed-37d66dabc9cf', 1, NULL, NULL),
 ('126c2bfc-5c57-4b71-b5a1-73c2f0f3fc07','31ac5c2d-761e-4d5c-96ed-37d66dabc9cf', 2, NULL, NULL),
@@ -51,25 +52,25 @@ VALUES
 INSERT INTO exercise_declaration (id, declaration_date, declaration_status, exercise_id, student_id)
 VALUES
 -- PAST
-('be00c462-cf56-41a9-850d-8c8ff4d3e307','2025-04-08 10:00:00','APPROVED','b0457de3-f1d4-4c5e-84c5-4f5aa3a259a7','a1111111-2222-4333-8444-555555555577'),
-('0e58e63c-196f-4b85-81bc-4a7d2892d5e7','2025-04-08 10:30:00','REJECTED','f938c49d-b1d2-4e1b-a5a2-9f0e071d582f','a1111111-2222-4333-8444-555555555577'),
-('e7e418d2-e5e3-41ee-bd92-7a02a6e338a6','2025-04-15 11:00:00','CANCELLED','6a2f8499-3fc3-45d1-bdfb-dc55d402b865','a1111111-2222-4333-8444-555555555577'),
-('ce38d81b-2234-4dd5-b15a-6480c1c17b6f','2025-04-15 12:00:00','APPROVED','35d8ec74-5c29-4d09-b6f1-46df38d38d87','a1111111-2222-4333-8444-555555555577'),
+('be00c462-cf56-41a9-850d-8c8ff4d3e307','2025-04-08 10:00:00','APPROVED','b0457de3-f1d4-4c5e-84c5-4f5aa3a259a7','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('0e58e63c-196f-4b85-81bc-4a7d2892d5e7','2025-04-08 10:30:00','REJECTED','f938c49d-b1d2-4e1b-a5a2-9f0e071d582f','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('e7e418d2-e5e3-41ee-bd92-7a02a6e338a6','2025-04-15 11:00:00','CANCELLED','6a2f8499-3fc3-45d1-bdfb-dc55d402b865','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('ce38d81b-2234-4dd5-b15a-6480c1c17b6f','2025-04-15 12:00:00','APPROVED','35d8ec74-5c29-4d09-b6f1-46df38d38d87','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
 -- NEAR
-('daee8887-2041-41a7-8e70-747b4280d8ff','2025-05-02 09:00:00','WAITING','ed998758-7207-4a33-b9be-ec33ec137a5e','a1111111-2222-4333-8444-555555555577'),
-('df6e9b39-31d3-42c4-90c8-25581bb6c278','2025-05-02 09:30:00','REJECTED','126c2bfc-5c57-4b71-b5a1-73c2f0f3fc07','a1111111-2222-4333-8444-555555555577'),
-('b9a7685f-4490-4d14-bc32-9bbfdac240f8','2025-05-02 10:00:00','WAITING','40d3482f-9f6e-46b7-b6cf-e2eae4a949d1','a1111111-2222-4333-8444-555555555577'),
-('a401f6db-eef6-4b5a-acc5-1b52c34467e8','2025-05-02 10:30:00','CANCELLED','1c5fba12-1656-4680-90f2-e4a9f719e89f','a1111111-2222-4333-8444-555555555577'),
+('daee8887-2041-41a7-8e70-747b4280d8ff','2025-05-02 09:00:00','WAITING','ed998758-7207-4a33-b9be-ec33ec137a5e','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('df6e9b39-31d3-42c4-90c8-25581bb6c278','2025-05-02 09:30:00','REJECTED','126c2bfc-5c57-4b71-b5a1-73c2f0f3fc07','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('b9a7685f-4490-4d14-bc32-9bbfdac240f8','2025-05-02 10:00:00','WAITING','40d3482f-9f6e-46b7-b6cf-e2eae4a949d1','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('a401f6db-eef6-4b5a-acc5-1b52c34467e8','2025-05-02 10:30:00','CANCELLED','1c5fba12-1656-4680-90f2-e4a9f719e89f','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
 -- FUTURE
-('a0f04bfb-41ce-43ec-82a5-8ae6e1bdeae2','2025-05-03 11:00:00','WAITING','ac63f2aa-10a6-4d0b-b5f6-3b0a29b57c9d','a1111111-2222-4333-8444-555555555577'),
-('2ec86eb3-b257-46f3-9a0f-6ad6b9c918b5','2025-05-03 11:30:00','WAITING','3aa6dc86-b29b-420d-bca1-1f13f9e28485','a1111111-2222-4333-8444-555555555577'),
-('e3080533-38d2-4a27-b69f-7f94ea60aa71','2025-05-03 12:00:00','WAITING','ed5ce66e-4b2f-4dd0-bfd8-74034378e95c','a1111111-2222-4333-8444-555555555577'),
-('5f419d2a-6a6c-4b79-b232-f10d7de109a0','2025-05-03 12:30:00','WAITING','bfae58aa-850c-4f7c-88a0-5701dfb13f8e','a1111111-2222-4333-8444-555555555577');
+('a0f04bfb-41ce-43ec-82a5-8ae6e1bdeae2','2025-05-03 11:00:00','WAITING','ac63f2aa-10a6-4d0b-b5f6-3b0a29b57c9d','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('2ec86eb3-b257-46f3-9a0f-6ad6b9c918b5','2025-05-03 11:30:00','WAITING','3aa6dc86-b29b-420d-bca1-1f13f9e28485','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('e3080533-38d2-4a27-b69f-7f94ea60aa71','2025-05-03 12:00:00','WAITING','ed5ce66e-4b2f-4dd0-bfd8-74034378e95c','d44dd19d-0771-4242-bc3e-49ae0f58abb9'),
+('5f419d2a-6a6c-4b79-b232-f10d7de109a0','2025-05-03 12:30:00','WAITING','bfae58aa-850c-4f7c-88a0-5701dfb13f8e','d44dd19d-0771-4242-bc3e-49ae0f58abb9');
 
 -- PUNKTY
 INSERT INTO point (id, student_id, lesson_id, activity_value)
 VALUES
-('6e3a6e8f-00f0-41aa-babe-c93f841d8854','a1111111-2222-4333-8444-555555555577','02f5fc3a-f339-432f-a97d-f58be7cfb500', 1.0),
-('acb5de30-879e-4a5b-bb38-bdbf5c5a90a4','a1111111-2222-4333-8444-555555555577','b32fa49b-b885-4911-aac2-2910b04817b4', 0.5),
-('a595cfaa-5535-4d56-9824-1a60c3f26b2a','a1111111-2222-4333-8444-555555555577','31ac5c2d-761e-4d5c-96ed-37d66dabc9cf', 0.0),
-('df2f208f-36e0-4f9e-9856-d27d0b4d2f62','a1111111-2222-4333-8444-555555555577','f6717a87-9dd8-4d59-98ab-2f49e40b3652', 0.0);
+('6e3a6e8f-00f0-41aa-babe-c93f841d8854','d44dd19d-0771-4242-bc3e-49ae0f58abb9','02f5fc3a-f339-432f-a97d-f58be7cfb500', 1.0),
+('acb5de30-879e-4a5b-bb38-bdbf5c5a90a4','d44dd19d-0771-4242-bc3e-49ae0f58abb9','b32fa49b-b885-4911-aac2-2910b04817b4', 0.5),
+('a595cfaa-5535-4d56-9824-1a60c3f26b2a','d44dd19d-0771-4242-bc3e-49ae0f58abb9','31ac5c2d-761e-4d5c-96ed-37d66dabc9cf', 0.0),
+('df2f208f-36e0-4f9e-9856-d27d0b4d2f62','d44dd19d-0771-4242-bc3e-49ae0f58abb9','f6717a87-9dd8-4d59-98ab-2f49e40b3652', 0.0);

@@ -4,6 +4,7 @@ import com.example.ePolan.Model.Dtos.LessonDescriptionDto;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class LessonListMessage extends Message {
@@ -19,7 +20,7 @@ public class LessonListMessage extends Message {
 
     @Override
     public void send(String recipient) throws Exception {
-        LocalDate date = LocalDate.from(lesson.getClassDate());
+        LocalDate date = LocalDate.from(lesson.getClassDate().atZone(ZoneId.systemDefault()));
         String formattedDate = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
         String subject = "Exercise List for " + lesson.getCourseName() + " – " + formattedDate;
         String body = "Dear Professor,\nYou'll find the exercise list for the class scheduled on "

@@ -1,6 +1,6 @@
 package com.example.ePolan;
 
-import com.example.ePolan.Model.Dtos.NewCourseDto;
+import com.example.ePolan.Model.requests.NewCourseRequest;
 import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.User;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Component
 public class CourseGenerator {
-    public Course create(NewCourseDto dto, User creator) {
+    public Course create(NewCourseRequest dto, User creator) {
         Course course = new Course();
         course.setCreator(creator);
         course.setLessonTimes(dto.getLessonTimes());

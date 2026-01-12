@@ -15,4 +15,5 @@ public interface ParticipantRepository extends JpaRepository<Participant, UUID> 
 
     Set<Participant> findByCourseAndInvitationStatus(Course course, InvitationStatus invitationStatus);
 
+    Optional<Participant> findByStudent_EmailAndCourse(String email, Course course);
 }

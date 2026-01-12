@@ -21,7 +21,9 @@ public class ExerciseDto {
         this.groupName = exercise.getLesson().getCourse().getName();
         this.exerciseNumber = exercise.getExerciseNumber();
         this.subpoint = exercise.getSubpoint();
-        this.approvedStudent = new UserDto(exercise.getApprovedStudent());
+        if (exercise.getApprovedStudent() != null) {
+            this.approvedStudent = new UserDto(exercise.getApprovedStudent());
+        }
 
     }
 

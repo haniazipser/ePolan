@@ -3,7 +3,9 @@ package com.example.ePolan.Model.Dtos;
 import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.LessonTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.Comparator;
@@ -12,6 +14,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Getter @Setter
+@NoArgsConstructor
 public class CourseDto {
     private UUID id;
     private String name;
@@ -28,7 +31,7 @@ public class CourseDto {
         this.name = course.getName();
         this.instructor = course.getInstructor();
         this.creator = new UserDto( course.getCreator());
-        this.lessonTimes = course.getLessonTimes().stream().toList();
+        this.lessonTimes = course.getLessonTimes() != null ? course.getLessonTimes().stream().toList() : null;
         if (course.getLessons() != null) {
             this.lessons = course.getLessons().stream().map(s -> new LessonDto(s)).sorted(Comparator.comparing(LessonDto::getClassDate)).collect(Collectors.toList());
         }

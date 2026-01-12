@@ -2,10 +2,12 @@ package com.example.ePolan.Model.Dtos;
 
 import com.example.ePolan.Model.Entities.Exercise;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 @Getter @Setter
+@NoArgsConstructor
 public class ExerciseWithPointsDto {
     private UUID id;
     private Integer exerciseNumber;

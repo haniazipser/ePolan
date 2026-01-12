@@ -1,4 +1,4 @@
-package com.example.ePolan.Model.Dtos;
+package com.example.ePolan.Model.requests;
 
 import com.example.ePolan.Model.Entities.LessonTime;
 import jakarta.validation.constraints.Email;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class NewCourseDto {
+public class NewCourseRequest {
     private UUID id;
     private String name;
     @Email
@@ -21,5 +21,5 @@ public class NewCourseDto {
     private Instant endDate;
     private Instant startDate;
     private Integer frequency;
-    public NewCourseDto(){}
+    public NewCourseRequest(){}
 }

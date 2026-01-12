@@ -24,7 +24,7 @@ public class PointService {
     public List<PointDto> getUsersActivity (){
         User loggedUser = userService.getLoggedUser();
         return pointRepository.findByStudent(loggedUser)
-                .stream().map(a -> new PointDto(a)).sorted(Comparator.comparing(PointDto::getId)).collect(Collectors.toList());
+                .stream().map(a -> new PointDto(a)).collect(Collectors.toList());
     }
     public List<PointDto> getLoggedUserActivityInCourse(UUID courseId) {
         User loggedUser = userService.getLoggedUser();

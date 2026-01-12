@@ -40,7 +40,7 @@ public class UserService {
         user.setId(jwt.getSubject());
         user.setFirstName(jwt.getClaimAsString("given_name"));
         user.setLastName(jwt.getClaimAsString("family_name"));
-        user.setEmail(jwt.getClaimAsString("student"));
+        user.setEmail(jwt.getClaimAsString("email"));
     }
 
     public User getLoggedUser() {
@@ -54,6 +54,12 @@ public class UserService {
     public User getUserById(String userId){
         return userRepository
                 .findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository
+                .findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 }

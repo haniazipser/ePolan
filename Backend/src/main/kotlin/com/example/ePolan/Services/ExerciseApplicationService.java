@@ -44,7 +44,8 @@ public class ExerciseApplicationService {
     @Retryable(retryFor = {MessagingException.class, FileNotFoundException.class, DocumentException.class})
     public void exportListToPdf(UUID lessonId){
         List<ExerciseWithPointsDto> exercises1 = exerciseService.getList(lessonId)
-                .stream().sorted(Comparator.comparing(ExerciseWithPointsDto::getExerciseNumber).thenComparing(ExerciseWithPointsDto::getSubpoint))
+                .stream().sorted(Comparator.comparing(ExerciseWithPointsDto::getExerciseNumber).thenComparing(ExerciseWithPointsDto::getSubpoint,
+                        Comparator.nullsFirst(String::compareTo)))
                 .collect(Collectors.toList());
 
         List<ExerciseWithPointsDto> exercises2 = exerciseService.getList(lessonId)

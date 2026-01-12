@@ -3,13 +3,12 @@ package com.example.ePolan.Services;
 import com.example.ePolan.CourseGenerator;
 import com.example.ePolan.LessonGenerator;
 import com.example.ePolan.Model.Dtos.CourseDto;
-import com.example.ePolan.Model.Dtos.NewCourseDto;
+import com.example.ePolan.Model.requests.NewCourseRequest;
 import com.example.ePolan.Model.Dtos.UserDto;
 
 import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.InvitationStatus;
 import com.example.ePolan.Model.Entities.Lesson;
-import com.example.ePolan.Model.Entities.LessonTime;
 import com.example.ePolan.Model.Entities.Participant;
 import com.example.ePolan.Model.Entities.User;
 import com.example.ePolan.Repositories.CourseRepository;
@@ -17,21 +16,19 @@ import com.example.ePolan.Repositories.CourseRepository;
 import com.example.ePolan.Repositories.LessonRepository;
 import com.example.ePolan.Repositories.ParticipantRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class CourseService {
     private final CourseRepository courseRepository;
     private final ParticipantRepository participantRepository;
@@ -41,12 +38,13 @@ public class CourseService {
     private final LessonGenerator lessonGenerator;
     public List<CourseDto> getUsersGroups (){
         User loggedUser = userService.getLoggedUser();
+        log.info("logged user: " + loggedUser.getId());
 
         return courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(loggedUser.getId(), InvitationStatus.ACCEPTED)
-              .stream().map(g -> new CourseDto(g)).sorted(Comparator.comparing(CourseDto::getId)).collect(Collectors.toList());
+              .stream().map(CourseDto::new).collect(Collectors.toList());
     }
 
-    public CourseDto createCourse(NewCourseDto courseDto) {
+    public CourseDto createCourse(NewCourseRequest courseDto) {
         User loggedUser = userService.getLoggedUser();
 
         Course course = courseGenerator.create(courseDto, loggedUser);
@@ -64,7 +62,7 @@ public class CourseService {
         return new CourseDto(course);
     }
 
-    public void addStudentToGroup(String userId, UUID courseId) {
+    public void addStudentToGroup(String email, UUID courseId) {
         Optional<Course> course = courseRepository.findById(courseId);
         User loggedUser = userService.getLoggedUser();
         if (course.isEmpty()){
@@ -73,11 +71,11 @@ public class CourseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to add students to this group");
         }
 
-        if (!participantRepository.findByStudent_IdAndCourse(userId, course.get()).isEmpty()){
+        if (!participantRepository.findByStudent_EmailAndCourse(email, course.get()).isEmpty()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"This user is already in this course");
         }
 
-        User student = userService.getUserById(userId);
+        User student = userService.getUserByEmail(email);
 
         Participant participant = new Participant();
         participant.setStudent(student);
@@ -92,8 +90,8 @@ public class CourseService {
         User loggedUser = userService.getLoggedUser();
         if (course.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found");
-        }else if (course.get().isStudentACreator(loggedUser)){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to delete students to this group");
+        }else if (!course.get().isStudentACreator(loggedUser)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not authorized to delete students from this group");
         }
 
         Optional<Participant> participant = participantRepository.findByStudent_IdAndCourse(userId, course.get());
@@ -154,6 +152,8 @@ public class CourseService {
         participantRepository.save(participant);
 
     }
+
+
 
     public List<CourseDto> getUsersArchivedGroups() {
         User loggedUser = userService.getLoggedUser();
