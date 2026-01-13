@@ -2,10 +2,12 @@ package com.example.ePolan.Model.Dtos;
 
 import com.example.ePolan.Model.Entities.Participant;
 import com.example.ePolan.Model.Entities.User;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter@Setter
+@AllArgsConstructor
 public class UserDto {
     String id;
     String email;
