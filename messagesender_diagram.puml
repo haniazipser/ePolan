@@ -1,0 +1,52 @@
+@startuml
+abstract class Services.messagesender.Message {
+# MessageSender sender
++ {abstract}void send(String)
+}
+
+
+interface Services.messagesender.MessageSender {
+~ void send(String,String,String,File)
+}
+
+class Services.messagesender.EmailMessageSender {
+- JavaMailSender mailSender
++ void send(String,String,String,File)
+- String buildHtmlContent(String,String)
+}
+
+
+class Services.messagesender.LessonListMessage {
+- LessonDescriptionDto lesson
+- String filename
++ void send(String)
+}
+
+
+class Services.messagesender.GroupInvitationMessage {
+- CourseDto course
+- UUID courseId
++ void send(String)
+}
+
+
+class Services.messagesender.AdminErrorMessage {
+- RuntimeException exception
+- Lesson lesson
++ void send(String)
+}
+
+
+
+
+Services.messagesender.MessageSender <|.. Services.messagesender.EmailMessageSender
+Services.messagesender.Message <|-- Services.messagesender.LessonListMessage
+Services.messagesender.Message <|-- Services.messagesender.GroupInvitationMessage
+Services.messagesender.Message <|-- Services.messagesender.AdminErrorMessage
+Services.messagesender.Message *-- Services.messagesender.MessageSender : sender
+
+note right of Services.messagesender.Message
+Bridge pattern
+end note
+
+@enduml

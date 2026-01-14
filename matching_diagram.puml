@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+class Services.matching.hungarianalgorithm.AssignmentAlgorithm {
++ {static} int[][] assign(double[][])
++ {static} int[][] assign(double[][],int)
+}
+
+class Services.matching.MatchingService {
+- DeclarationService declarationService
+- ExerciseRepository exerciseRepository
+- LessonService lessonService
+- ExerciseApplicationService exerciseApplicationService
+- UserService userService
+- MatchingStrategy matchingStrategy
++ void scheduleTask()
++ void matchingAlgorithm(UUID)
+}
+
+
+interface Services.matching.MatchingStrategy {
+~ int[][] match(double[][])
+}
+
+class Services.matching.hungarianalgorithm.HungarianAlgorithm {
+~ double[][] matrix
+~ int[] squareInRow
++ int[][] findOptimalAssignment()
+- boolean allColumnsAreCovered()
+- void step1()
+- void step2()
+- void step3()
+- void step7()
+- int[] step4()
+- void step6(int[])
+}
+
+
+class Services.matching.HungarianMatchingStrategy {
++ int[][] match(double[][])
+}
+
+
+
+Services.matching.MatchingStrategy <|.. Services.matching.HungarianMatchingStrategy
+Services.matching.MatchingService o-- Services.matching.MatchingStrategy : matchingStrategy
+Services.matching.HungarianMatchingStrategy ..> Services.matching.hungarianalgorithm.AssignmentAlgorithm : uses
+Services.matching.hungarianalgorithm.AssignmentAlgorithm ..> Services.matching.hungarianalgorithm.HungarianAlgorithm : uses
+
+
+@enduml

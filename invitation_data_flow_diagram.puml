@@ -1,0 +1,33 @@
+@startuml
+actor "Course creator" as Admin
+actor "Student" as User
+participant "CourseController" as Controller
+participant "CourseApplicationService" as AppService
+participant "CourseService" as CourseService
+participant "EmailMessageSender" as EmailSender
+participant "Mail Server" as Mail
+
+== Inviting student to course ==
+
+Admin -> Controller : POST /course/{email}/{course_id}
+Controller -> AppService : addStudentToGroup(email, courseId)
+
+AppService -> CourseService : addStudentToGroup(email, courseId)
+CourseService --> AppService : OK
+
+AppService -> EmailSender : new GroupInvitationMessage(...)
+AppService -> EmailSender : send(email)
+
+EmailSender -> Mail : send invitation email
+Mail --> User : email with course code
+
+== Joining the course ==
+
+User -> Controller : POST /course/{course_code}
+Controller -> CourseService : joinCourse(courseCode)
+
+
+CourseService --> Controller : 200 OK
+Controller --> User : Student is a member of the course
+
+@enduml
