@@ -45,7 +45,7 @@ Services.messagesender.Message <|-- Services.messagesender.GroupInvitationMessag
 Services.messagesender.Message <|-- Services.messagesender.AdminErrorMessage
 Services.messagesender.Message *-- Services.messagesender.MessageSender : sender
 
-note left of Services.messagesender.Message
+note right of Services.messagesender.Message
 Bridge pattern
 end note
 

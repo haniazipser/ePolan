@@ -10,6 +10,7 @@ import com.example.ePolan.Services.LessonService;
 import com.example.ePolan.Services.UserService;
 import com.example.ePolan.Services.matching.hungarianalgorithm.AssignmentAlgorithm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MatchingService {
     private final DeclarationService declarationService;
     private final ExerciseRepository exerciseRepository;
@@ -41,6 +43,7 @@ public class MatchingService {
     public void scheduleTask() {
         List<UUID> lessons = lessonService.getNextLessons();
         for (UUID l : lessons){
+            log.info("Running matching for " + l);
             matchingAlgorithm(l);
             exerciseApplicationService.exportListToPdf(l);
         }
@@ -62,6 +65,7 @@ public class MatchingService {
 
         // build maps and lists
         for (DeclarationShortDto d : declarations) {
+
             String student = d.getStudent().getId();
             if (!studentMap.containsKey(student)) {
                 studentMap.put(student, nStudents++);
@@ -80,7 +84,7 @@ public class MatchingService {
 
         for (DeclarationShortDto d : declarations) {
             int i = taskMap.get(d.getExerciseId());
-            int j = studentMap.get(d.getStudent());
+            int j = studentMap.get(d.getStudent().getId());
             cost[i][j] = d.getPointsInCourse();
         }
 

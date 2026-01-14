@@ -8,14 +8,19 @@ import com.example.ePolan.Services.filegenerator.DocumentGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class DocumentService {
 
     private final Map<DocumentFormat, DocumentGenerator> generators;
+
+    public DocumentService(PdfDocumentGenerator documentGenerator){
+        generators = new HashMap<>();
+        generators.put(DocumentFormat.PDF, documentGenerator);
+    }
 
     public String createDocument(DocumentFormat format,
                                  List<ExerciseWithPointsDto> byExercise,

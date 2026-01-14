@@ -7,6 +7,8 @@ import com.example.ePolan.Model.Entities.Course;
 import com.example.ePolan.Model.Entities.Lesson;
 import com.example.ePolan.Model.Entities.Exercise;
 import com.example.ePolan.Model.Entities.User;
+import com.example.ePolan.Model.requests.ExerciseListRequest;
+import com.example.ePolan.Model.requests.ExerciseRequest;
 import com.example.ePolan.Repositories.CourseRepository;
 import com.example.ePolan.Repositories.LessonRepository;
 import com.example.ePolan.Repositories.ExerciseRepository;
@@ -68,8 +70,8 @@ public class LessonService {
                 .map(l -> new LessonDto(l)).collect(Collectors.toList());
     }
 
-    public void updateExercisesForLesson(LessonDto lesson) {
-        Optional<Lesson> l = lessonRepository.findById(lesson.getId());
+    public void updateExercisesForLesson(ExerciseListRequest exerciseRequests, UUID lessonId) {
+        Optional<Lesson> l = lessonRepository.findById(lessonId);
         if (l.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lesson not found");
         }
@@ -80,11 +82,11 @@ public class LessonService {
             }
         }
 
-        for (ExerciseDto e : lesson.getExercises()) {
+        for (ExerciseRequest e : exerciseRequests.exercises()) {
             Exercise exercise = new Exercise();
             exercise.setLesson(l.get());
-            exercise.setExerciseNumber( e.getExerciseNumber());
-            exercise.setSubpoint(e.getSubpoint());
+            exercise.setExerciseNumber( e.exerciseNumber());
+            exercise.setSubpoint(e.subpoint());
             exerciseRepository.save(exercise);
         }
     }
@@ -99,7 +101,9 @@ public class LessonService {
         LocalDate tomorrow = LocalDate.now(zone).plusDays(1);
         Instant startOfDay = tomorrow.atStartOfDay(zone).toInstant();
         Instant endOfDay = tomorrow.plusDays(1).atStartOfDay(zone).toInstant();
-
+        System.out.println("Szukam lekcji między:");
+        System.out.println("Start: " + startOfDay + " (" + startOfDay.atZone(zone) + ")");
+        System.out.println("End: " + endOfDay + " (" + endOfDay.atZone(zone) + ")");
         return lessonRepository.findLessonIdsByClassDateBetween(startOfDay, endOfDay);
     }
 }

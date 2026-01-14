@@ -12,8 +12,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TestingMatching {
     private final MatchingService matchingService;
-    @PostMapping("/match/{lessonId}")
-    public void runMatchingAlgorithm(@PathVariable UUID lessonId){
-        matchingService.matchingAlgorithm( lessonId);
+    @PostMapping("/match")
+    public void runMatchingAlgorithm(){
+        matchingService.scheduleTask();
     }
 }

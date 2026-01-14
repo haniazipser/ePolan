@@ -1,5 +1,6 @@
 package com.example.ePolan.Controllers;
 
+import com.example.ePolan.Model.requests.ActivityRequest;
 import com.example.ePolan.Services.PointService;
 import com.example.ePolan.Model.Dtos.PointDto;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,9 @@ public class PointController {
     }
 
 
-    @PostMapping("/{lessonId}/{value}")
-    public void addStudentActivity( @PathVariable UUID lessonId, @PathVariable Double value){
-        pointService.addStudentActivity(lessonId,value);
+    @PostMapping("/{lessonId}")
+    public void addStudentActivity( @PathVariable UUID lessonId, @RequestBody ActivityRequest request){
+        pointService.addStudentActivity(lessonId, request.value());
     }
 
 

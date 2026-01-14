@@ -2,6 +2,7 @@ package com.example.ePolan.Controllers;
 
 import com.example.ePolan.Model.Dtos.ExerciseDto;
 import com.example.ePolan.Model.Dtos.LessonDto;
+import com.example.ePolan.Model.requests.ExerciseListRequest;
 import com.example.ePolan.Services.LessonService;
 import com.example.ePolan.Services.ExerciseService;
 import jakarta.validation.Valid;
@@ -43,9 +44,9 @@ public class LessonController {
                 .body(lessonService.getLessonsForCourse(courseId));
     }
 
-   @PutMapping("/exercises")
-    public void updateExercisesForLesson(@Valid @RequestBody LessonDto lesson){
-        lessonService.updateExercisesForLesson(lesson);
+    @PutMapping("/{lessonId}")
+    public void updateExercisesForLesson(@PathVariable UUID lessonId, @Valid @RequestBody ExerciseListRequest exercises){
+        lessonService.updateExercisesForLesson(exercises, lessonId);
     }
 
     @PutMapping("{courseId}/{date}/addLesson")

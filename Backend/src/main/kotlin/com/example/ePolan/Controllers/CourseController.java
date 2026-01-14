@@ -1,7 +1,9 @@
 package com.example.ePolan.Controllers;
 
 import com.example.ePolan.Model.Dtos.CourseDto;
-import com.example.ePolan.Model.Dtos.NewCourseDto;
+import com.example.ePolan.Model.requests.InviteStudentRequest;
+import com.example.ePolan.Model.requests.JoinCourseRequest;
+import com.example.ePolan.Model.requests.NewCourseRequest;
 import com.example.ePolan.Model.Dtos.UserDto;
 import com.example.ePolan.Services.CourseApplicationService;
 import com.example.ePolan.Services.CourseService;
@@ -22,12 +24,12 @@ public class CourseController {
 
     private final CourseService courseService;
     private final CourseApplicationService courseApplicationService;
-    @PostMapping("/create")
-    public CourseDto createGroup(@Valid @RequestBody NewCourseDto newCourseDto){
-        return courseService.createCourse(newCourseDto);
+    @PostMapping
+    public CourseDto createGroup(@Valid @RequestBody NewCourseRequest newCourseRequest){
+        return courseService.createCourse(newCourseRequest);
     }
 
-    @GetMapping("/courses")
+    @GetMapping
     public ResponseEntity<List<CourseDto>> getStudentGroups(){
         return ResponseEntity
                 .ok()
@@ -43,12 +45,12 @@ public class CourseController {
                 .body(courseService.getUsersArchivedGroups());
     }
 
-    @PutMapping("/{courseId}")
+    @PutMapping("/{courseId}/restore")
     public void unarchiveCourse(@PathVariable UUID courseId){
         courseService.unarchiveCourse(courseId);
     }
 
-    @GetMapping("{courseId}/students")
+    @GetMapping("/{courseId}/students")
     public ResponseEntity<List<UserDto>> getStudentsInGroup(@PathVariable UUID courseId){
         return ResponseEntity
                 .ok()
@@ -56,18 +58,24 @@ public class CourseController {
                 .body(courseService.getStudentsInGroup(courseId));
     }
 
-    @PostMapping("/{userId}/{courseId}")
-    public void addStudentToCourse(@PathVariable String userId, @PathVariable UUID courseId){
-        courseApplicationService.addStudentToGroup(userId, courseId);
+    @PostMapping("/{courseId}/invitations")
+    public void inviteStudent(
+            @PathVariable UUID courseId,
+            @RequestBody InviteStudentRequest request) {
+
+        courseApplicationService.addStudentToGroup(
+                request.email(),
+                courseId
+        );
     }
 
-    @PostMapping("/{groupCode}")
-    public void joinCourse(@PathVariable String groupCode){
-        courseService.joinCourse(groupCode);
+    @PostMapping("/join")
+    public void joinCourse(@RequestBody JoinCourseRequest request) {
+        courseService.joinCourse(request.groupCode());
     }
 
-    @DeleteMapping("/{userId}/{courseId}")
-    public void deleteStudentFromGroup(@PathVariable String userId, @PathVariable UUID courseId){
+    @DeleteMapping("/{courseId}/students/{userId}")
+    public void deleteStudentFromGroup(@PathVariable UUID courseId, @PathVariable String userId){
         courseService.deleteStudentFromGroup(userId,courseId);
     }
 

@@ -8,13 +8,14 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.PdfWriter;
+import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-
+@Component
 public class PdfDocumentGenerator extends BaseDocumentGenerator {
     private Document document;
     private Font titleFont;
@@ -51,7 +52,7 @@ public class PdfDocumentGenerator extends BaseDocumentGenerator {
 
             PdfParagraphBuilder builder = PdfParagraphBuilder.create()
                     .addText(i + ". ", exerciseFont)
-                    .addText(e.getApprovedStudent() + " -> Ex. " + e.getExerciseNumber(), userFont);
+                    .addText(e.getApprovedStudent().getName() + " " + e.getApprovedStudent().getSurname() + " -> Ex. " + e.getExerciseNumber(), userFont);
 
             if (e.getSubpoint() != null && !e.getSubpoint().isEmpty()) {
                 builder.addText(". " + e.getSubpoint() + ") ", userFont);
@@ -78,7 +79,7 @@ public class PdfDocumentGenerator extends BaseDocumentGenerator {
                 builder.addText(e.getSubpoint() + ") ", exerciseFont);
             }
 
-            builder.addText(" -> " + e.getApprovedStudent(), userFont)
+            builder.addText(" -> " +e.getApprovedStudent().getName() + " " + e.getApprovedStudent().getSurname(), userFont)
                     .withSpacingAfter(10)
                     .addTo(document);
         }

@@ -6,6 +6,7 @@ import com.example.ePolan.Model.Entities.LessonTime;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ public class LessonGenerator {
 
             while (next.isBefore(endDate)) {
                 Lesson lesson = new Lesson();
-                lesson.setClassDate(next);
+                lesson.setClassDate(adjustToNoon(next));
                 lesson.setCourse(course);
                 lesson.setLessonExercises(Collections.emptySet());
                 lessons.add(lesson);
@@ -32,5 +33,14 @@ public class LessonGenerator {
             }
         }
         return lessons;
+    }
+
+    private Instant adjustToNoon(Instant instant) {
+        return instant.atZone(ZoneId.of("UTC"))
+                .withHour(12)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0)
+                .toInstant();
     }
 }
