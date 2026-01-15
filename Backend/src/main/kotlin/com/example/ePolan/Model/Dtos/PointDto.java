@@ -1,6 +1,7 @@
 package com.example.ePolan.Model.Dtos;
 
 import com.example.ePolan.Model.Entities.Point;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
