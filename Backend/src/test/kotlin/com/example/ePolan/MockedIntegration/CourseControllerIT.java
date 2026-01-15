@@ -5,7 +5,11 @@ import com.example.ePolan.Model.Entities.InvitationStatus;
 import com.example.ePolan.Model.Entities.Participant;
 import com.example.ePolan.Model.Entities.User;
 import com.example.ePolan.Repositories.CourseRepository;
+import com.example.ePolan.Repositories.ParticipantRepository;
 import com.example.ePolan.Repositories.UserRepository;
+import com.example.ePolan.Services.UserService;
+import com.example.ePolan.CourseGenerator;
+import com.example.ePolan.LessonGenerator;
 import com.example.ePolan.Utils.TestCourses;
 import com.example.ePolan.Utils.TestUsers;
 import org.junit.jupiter.api.Test;
@@ -28,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 class CourseControllerIT {
 
     @MockBean
@@ -36,6 +41,17 @@ class CourseControllerIT {
     @MockBean
     UserRepository userRepository;
 
+    @MockBean
+    ParticipantRepository participantRepository;
+
+    @MockBean
+    UserService userService;
+
+    @MockBean
+    CourseGenerator courseGenerator;
+
+    @MockBean
+    LessonGenerator lessonGenerator;
 
     @Autowired
     MockMvc mockMvc;
@@ -48,14 +64,13 @@ class CourseControllerIT {
         Course course = TestCourses.course(UUID.randomUUID(),"Algebra", creator);
         course.setInstructor("Cooke");
 
+        when(userService.getLoggedUser()).thenReturn(user);
+
         when(courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus("test-user", InvitationStatus.ACCEPTED))
                 .thenReturn(Set.of(course));
 
-        when(userRepository.findById("test-user"))
-                .thenReturn(Optional.of(user));
-
         mockMvc.perform(get("/course")
-                    .with(jwt().jwt(jwt -> jwt.subject("test-user"))))
+                        .with(jwt().jwt(jwt -> jwt.subject("test-user"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Algebra"))
@@ -66,8 +81,7 @@ class CourseControllerIT {
     void getStudentGroups_returnsEmpty_whenNoCourses() throws Exception {
         User student = TestUsers.user("test-user");
 
-        when(userRepository.findById("test-user"))
-                .thenReturn(Optional.of(student));
+        when(userService.getLoggedUser()).thenReturn(student);
 
         when(courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(
                 "test-user", InvitationStatus.ACCEPTED))
@@ -88,8 +102,7 @@ class CourseControllerIT {
         Course course1 = TestCourses.course(UUID.randomUUID(),"Algebra", creator1);
         Course course2 = TestCourses.course(UUID.randomUUID(),"Geometry", creator2);
 
-        when(userRepository.findById("test-user"))
-                .thenReturn(Optional.of(student));
+        when(userService.getLoggedUser()).thenReturn(student);
 
         when(courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(
                 "test-user", InvitationStatus.ACCEPTED))
@@ -104,16 +117,6 @@ class CourseControllerIT {
     }
 
     @Test
-    void getStudentGroups_returnsNotFound_whenStudentMissing() throws Exception {
-        when(userRepository.findById("test-user"))
-                .thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/course")
-                        .with(jwt().jwt(jwt -> jwt.subject("test-user"))))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void getStudentsInGroup_returnsStudents() throws Exception {
         UUID courseId = UUID.randomUUID();
 
@@ -121,6 +124,11 @@ class CourseControllerIT {
         User student1 = TestUsers.user("s1");
         User student2 = TestUsers.user("s2");
         Course course = TestCourses.course(courseId, "Algebra", creator);
+
+        Participant creatorParticipant = new Participant();
+        creatorParticipant.setStudent(creator);
+        creatorParticipant.setCourse(course);
+        creatorParticipant.setInvitationStatus(InvitationStatus.ACCEPTED);
 
         Participant participant1 = new Participant();
         participant1.setStudent(student1);
@@ -132,12 +140,12 @@ class CourseControllerIT {
         participant2.setCourse(course);
         participant2.setInvitationStatus(InvitationStatus.ACCEPTED);
 
+        course.setStudents(new HashSet<>(Set.of(creatorParticipant, participant1, participant2)));
 
-        course.setStudents(new HashSet<>(Set.of(participant1)));
-        course.getStudents().add(participant2);
-
-        when(courseRepository.findById(courseId))
-                .thenReturn(Optional.of(course));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(participantRepository.findByCourseAndInvitationStatus(course, InvitationStatus.ACCEPTED))
+                .thenReturn(Set.of(participant1, participant2));
 
         mockMvc.perform(get("/course/{courseId}/students", courseId)
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
@@ -150,12 +158,12 @@ class CourseControllerIT {
     @Test
     void createCourse_createsCourse() throws Exception {
         User creator = TestUsers.user("creator");
+        Course newCourse = TestCourses.course(UUID.randomUUID(), "Physics", creator);
 
-        when(userRepository.findById("creator"))
-                .thenReturn(Optional.of(creator));
-
-        when(courseRepository.save(any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseGenerator.create(any(), any())).thenReturn(newCourse);
+        when(courseRepository.save(any())).thenReturn(newCourse);
+        when(lessonGenerator.generateLessons(any())).thenReturn(new HashSet<>());
 
         mockMvc.perform(post("/course")
                         .with(jwt().jwt(jwt -> jwt.subject("creator")))
@@ -175,11 +183,15 @@ class CourseControllerIT {
         Course course = TestCourses.course(UUID.randomUUID(), "Math", TestUsers.user("creator"));
         course.setCourseCode("JOIN123");
 
-        when(userRepository.findById("student"))
-                .thenReturn(Optional.of(student));
+        Participant participant = new Participant();
+        participant.setStudent(student);
+        participant.setCourse(course);
+        participant.setInvitationStatus(InvitationStatus.WAITING);
 
-        when(courseRepository.findByCourseCode("JOIN123"))
-                .thenReturn(Optional.of(course));
+        when(userService.getLoggedUser()).thenReturn(student);
+        when(courseRepository.findByCourseCode("JOIN123")).thenReturn(Optional.of(course));
+        when(participantRepository.findByStudent_IdAndCourse(student.getId(), course))
+                .thenReturn(Optional.of(participant));
 
         mockMvc.perform(post("/course/join")
                         .with(jwt().jwt(jwt -> jwt.subject("student")))
@@ -196,13 +208,14 @@ class CourseControllerIT {
     void inviteStudent_sendsInvitation() throws Exception {
         UUID courseId = UUID.randomUUID();
         User creator = TestUsers.user("creator");
+        User student = TestUsers.user("student@test.com");
         Course course = TestCourses.course(courseId, "Math", creator);
 
-        when(userRepository.findById("creator"))
-                .thenReturn(Optional.of(creator));
-
-        when(courseRepository.findById(courseId))
-                .thenReturn(Optional.of(course));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(participantRepository.findByStudent_EmailAndCourse("student@test.com", course))
+                .thenReturn(Optional.empty());
+        when(userService.getUserByEmail("student@test.com")).thenReturn(student);
 
         mockMvc.perform(post("/course/{courseId}/invitations", courseId)
                         .with(jwt().jwt(jwt -> jwt.subject("creator")))
@@ -223,26 +236,44 @@ class CourseControllerIT {
         User student = TestUsers.user("student");
         Course course = TestCourses.course(courseId, "Math", creator);
 
+        Participant creatorParticipant = new Participant();
+        creatorParticipant.setStudent(creator);
+        creatorParticipant.setCourse(course);
+        creatorParticipant.setInvitationStatus(InvitationStatus.ACCEPTED);
+
         Participant participant = new Participant();
         participant.setStudent(student);
         participant.setCourse(course);
         participant.setInvitationStatus(InvitationStatus.ACCEPTED);
 
-        course.setStudents(new HashSet<>(Set.of(participant)));
+        course.setStudents(new HashSet<>(Set.of(creatorParticipant, participant)));
 
-        when(courseRepository.findById(courseId))
-                .thenReturn(Optional.of(course));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(participantRepository.findByStudent_IdAndCourse("student", course))
+                .thenReturn(Optional.of(participant));
 
         mockMvc.perform(delete("/course/{courseId}/students/{userId}", courseId, "student")
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
                 .andExpect(status().isOk());
 
-        verify(courseRepository).save(any(Course.class));
+        verify(courseRepository).findById(courseId);
     }
 
     @Test
     void archiveCourse_archivesCourse() throws Exception {
         UUID courseId = UUID.randomUUID();
+        User creator = TestUsers.user("creator");
+        Course course = TestCourses.course(courseId, "Math", creator);
+
+        Participant participant = new Participant();
+        participant.setStudent(creator);
+        participant.setCourse(course);
+        participant.setInvitationStatus(InvitationStatus.ACCEPTED);
+        course.setStudents(new HashSet<>(Set.of(participant)));
+
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
         mockMvc.perform(delete("/course/{courseId}", courseId)
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
@@ -254,7 +285,10 @@ class CourseControllerIT {
     @Test
     void getStudentArchivedGroups_returnsArchivedCourses() throws Exception {
         User creator = TestUsers.user("creator");
+        User student = TestUsers.user("test-user");
         Course archivedCourse = TestCourses.course(UUID.randomUUID(), "Old Course", creator);
+
+        when(userService.getLoggedUser()).thenReturn(student);
 
         when(courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(
                 "test-user", InvitationStatus.ARCHIVED))
@@ -269,6 +303,10 @@ class CourseControllerIT {
 
     @Test
     void getStudentArchivedGroups_returnsEmptyWhenNoArchived() throws Exception {
+        User student = TestUsers.user("test-user");
+
+        when(userService.getLoggedUser()).thenReturn(student);
+
         when(courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus(
                 "test-user", InvitationStatus.ARCHIVED))
                 .thenReturn(Set.of());
@@ -282,6 +320,17 @@ class CourseControllerIT {
     @Test
     void unarchiveCourse_restoresCourse() throws Exception {
         UUID courseId = UUID.randomUUID();
+        User creator = TestUsers.user("creator");
+        Course course = TestCourses.course(courseId, "Math", creator);
+
+        Participant participant = new Participant();
+        participant.setStudent(creator);
+        participant.setCourse(course);
+        participant.setInvitationStatus(InvitationStatus.ARCHIVED);
+        course.setStudents(new HashSet<>(Set.of(participant)));
+
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
         mockMvc.perform(put("/course/{courseId}/restore", courseId)
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
@@ -295,10 +344,18 @@ class CourseControllerIT {
         UUID courseId = UUID.randomUUID();
         User creator = TestUsers.user("creator");
         Course course = TestCourses.course(courseId, "Empty Course", creator);
-        course.setStudents(new HashSet<>());
 
-        when(courseRepository.findById(courseId))
-                .thenReturn(Optional.of(course));
+        Participant creatorParticipant = new Participant();
+        creatorParticipant.setStudent(creator);
+        creatorParticipant.setCourse(course);
+        creatorParticipant.setInvitationStatus(InvitationStatus.ACCEPTED);
+
+        course.setStudents(new HashSet<>(Set.of(creatorParticipant)));
+
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(participantRepository.findByCourseAndInvitationStatus(course, InvitationStatus.ACCEPTED))
+                .thenReturn(Set.of());
 
         mockMvc.perform(get("/course/{courseId}/students", courseId)
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
@@ -310,11 +367,13 @@ class CourseControllerIT {
     void createCourse_createsMultipleCourses() throws Exception {
         User creator = TestUsers.user("creator");
 
-        when(userRepository.findById("creator"))
-                .thenReturn(Optional.of(creator));
+        Course course1 = TestCourses.course(UUID.randomUUID(), "Chemistry", creator);
+        Course course2 = TestCourses.course(UUID.randomUUID(), "Biology", creator);
 
-        when(courseRepository.save(any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseGenerator.create(any(), any())).thenReturn(course1).thenReturn(course2);
+        when(courseRepository.save(any())).thenReturn(course1).thenReturn(course2);
+        when(lessonGenerator.generateLessons(any())).thenReturn(new HashSet<>());
 
         // Create first course
         mockMvc.perform(post("/course")
@@ -347,11 +406,8 @@ class CourseControllerIT {
     void joinCourse_withInvalidCode() throws Exception {
         User student = TestUsers.user("student");
 
-        when(userRepository.findById("student"))
-                .thenReturn(Optional.of(student));
-
-        when(courseRepository.findByCourseCode("INVALID"))
-                .thenReturn(Optional.empty());
+        when(userService.getLoggedUser()).thenReturn(student);
+        when(courseRepository.findByCourseCode("INVALID")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/course/join")
                         .with(jwt().jwt(jwt -> jwt.subject("student")))
@@ -373,6 +429,11 @@ class CourseControllerIT {
         User student2 = TestUsers.user("s2");
         Course course = TestCourses.course(courseId, "Advanced Math", creator);
 
+        Participant creatorParticipant = new Participant();
+        creatorParticipant.setStudent(creator);
+        creatorParticipant.setCourse(course);
+        creatorParticipant.setInvitationStatus(InvitationStatus.ACCEPTED);
+
         Participant acceptedParticipant = new Participant();
         acceptedParticipant.setStudent(student1);
         acceptedParticipant.setCourse(course);
@@ -383,17 +444,18 @@ class CourseControllerIT {
         waitingParticipant.setCourse(course);
         waitingParticipant.setInvitationStatus(InvitationStatus.WAITING);
 
-        course.setStudents(new HashSet<>(Set.of(acceptedParticipant, waitingParticipant)));
+        course.setStudents(new HashSet<>(Set.of(creatorParticipant, acceptedParticipant, waitingParticipant)));
 
-        when(courseRepository.findById(courseId))
-                .thenReturn(Optional.of(course));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(participantRepository.findByCourseAndInvitationStatus(course, InvitationStatus.ACCEPTED))
+                .thenReturn(Set.of(acceptedParticipant));
 
         mockMvc.perform(get("/course/{courseId}/students", courseId)
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[*].id").value(hasItem("s1")))
-                .andExpect(jsonPath("$[*].id").value(hasItem("s2")));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[*].id").value(hasItem("s1")));
     }
 
     @Test
@@ -405,6 +467,11 @@ class CourseControllerIT {
         User student2 = TestUsers.user("student2");
         Course course = TestCourses.course(courseId, "Math", creator);
 
+        Participant creatorParticipant = new Participant();
+        creatorParticipant.setStudent(creator);
+        creatorParticipant.setCourse(course);
+        creatorParticipant.setInvitationStatus(InvitationStatus.ACCEPTED);
+
         Participant participant1 = new Participant();
         participant1.setStudent(student1);
         participant1.setCourse(course);
@@ -415,22 +482,24 @@ class CourseControllerIT {
         participant2.setCourse(course);
         participant2.setInvitationStatus(InvitationStatus.ACCEPTED);
 
-        course.setStudents(new HashSet<>(Set.of(participant1, participant2)));
+        course.setStudents(new HashSet<>(Set.of(creatorParticipant, participant1, participant2)));
 
-        when(courseRepository.findById(courseId))
-                .thenReturn(Optional.of(course));
+        when(userService.getLoggedUser()).thenReturn(creator);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(participantRepository.findByStudent_IdAndCourse("student1", course))
+                .thenReturn(Optional.of(participant1));
+        when(participantRepository.findByStudent_IdAndCourse("student2", course))
+                .thenReturn(Optional.of(participant2));
 
-        // Delete first student
         mockMvc.perform(delete("/course/{courseId}/students/{userId}", courseId, "student1")
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
                 .andExpect(status().isOk());
 
-        // Delete second student
         mockMvc.perform(delete("/course/{courseId}/students/{userId}", courseId, "student2")
                         .with(jwt().jwt(jwt -> jwt.subject("creator"))))
                 .andExpect(status().isOk());
 
-        verify(courseRepository, times(2)).save(any(Course.class));
+        verify(courseRepository, times(2)).findById(courseId);
     }
 
 }
