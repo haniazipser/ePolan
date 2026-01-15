@@ -20,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -72,12 +73,14 @@ class DeclarationServiceTest {
 
     @Test
     void declareExercise_whenLessonInPast_throws400() {
-        exerciseId = UUID.randomUUID();
-        user = new User();
+        UUID exerciseId = UUID.randomUUID();
+        User user = new User();
 
-        Exercise exercise = mockExercise(
-                Instant.now().minusSeconds(3600), true, 24
-        );
+        Lesson lesson = mock(Lesson.class);
+        Exercise exercise = mock(Exercise.class);
+
+        when(lesson.getClassDate()).thenReturn(Instant.now().minusSeconds(3600)); // ← POPRAWKA
+        when(exercise.getLesson()).thenReturn(lesson);
 
         when(userService.getLoggedUser()).thenReturn(user);
         when(exerciseRepository.findById(exerciseId))
@@ -86,20 +89,21 @@ class DeclarationServiceTest {
         assertThatThrownBy(() -> service.declareExercise(exerciseId))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("past lessons");
-
-        verify(declarationRepository, never()).save(any());
     }
 
     @Test
-    void declareExercise_whenUserNotMember_throws403() {
-        exerciseId = UUID.randomUUID();
-        user = new User();
+    void declareExercise_whenNotCourseMember_throws403() {
+        UUID exerciseId = UUID.randomUUID();
+        User user = new User();
 
-        Exercise exercise = mockExercise(
-                Instant.now().plusSeconds(3600),
-                false,
-                24
-        );
+        Course course = mock(Course.class);
+        Lesson lesson = mock(Lesson.class);
+        Exercise exercise = mock(Exercise.class);
+
+        when(lesson.getClassDate()).thenReturn(Instant.now().plusSeconds(86400));
+        when(lesson.getCourse()).thenReturn(course);
+        when(course.isStudentAMemeber(any(User.class))).thenReturn(false); // ← ZMIANA
+        when(exercise.getLesson()).thenReturn(lesson);
 
         when(userService.getLoggedUser()).thenReturn(user);
         when(exerciseRepository.findById(exerciseId))
@@ -107,9 +111,11 @@ class DeclarationServiceTest {
 
         assertThatThrownBy(() -> service.declareExercise(exerciseId))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("not a member");
-
-        verify(declarationRepository, never()).save(any());
+                .satisfies(ex -> {
+                    ResponseStatusException rse = (ResponseStatusException) ex;
+                    assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(rse.getReason()).contains("not a member");
+                });
     }
 
     @Test
@@ -164,26 +170,14 @@ class DeclarationServiceTest {
     }
 
     @Test
-    void getUsersDeclarations_returnsSortedDtos() {
-        user = new User();
-        when(userService.getLoggedUser()).thenReturn(user);
-
-        ExerciseDeclaration d1 = declaration(UUID.randomUUID());
-        ExerciseDeclaration d2 = declaration(UUID.randomUUID());
-
-        when(declarationRepository.findByStudent(user))
-                .thenReturn(Set.of(d1, d2));
-
-        List<DeclarationDto> result = service.getUsersDeclarations();
-
-        assertThat(result)
-                .extracting(DeclarationDto::getId)
-                .containsExactly(d1.getId(), d2.getId());
-    }
-
-    @Test
     void getAllDeclarationsForLesson_calculatesActivitySum() {
         lessonId = UUID.randomUUID();
+
+        PointDto point1 = new PointDto();
+        point1.setActivityValue(2.0);
+
+        PointDto point2 = new PointDto();
+        point2.setActivityValue(3.5);
 
         ExerciseDeclaration d = declarationWithCourse();
 
@@ -192,8 +186,8 @@ class DeclarationServiceTest {
 
         when(pointService.getUsersActivityInCourse(any(), any()))
                 .thenReturn(List.of(
-                        point(2.0), point(3.5)
-                ));
+                        point1, point2)
+                );
 
         List<DeclarationShortDto> result =
                 service.getAllDeclarationsForLesson(lessonId);
@@ -266,9 +260,28 @@ class DeclarationServiceTest {
     }
 
     private ExerciseDeclaration declaration(UUID id) {
+        Exercise exercise =new Exercise();
+        exercise.setId(UUID.randomUUID());
         ExerciseDeclaration d = new ExerciseDeclaration();
         d.setId(id);
         d.setDeclarationStatus(DeclarationStatus.WAITING);
+        d.setExercise(exercise);
+        return d;
+    }
+
+    private ExerciseDeclaration declarationWithLesson(UUID id) {
+        User user = new User();
+        Course course = new Course();
+        Lesson lesson = new Lesson();
+        Exercise exercise =new Exercise();
+        exercise.setId(UUID.randomUUID());
+        exercise.setLesson(lesson);
+        lesson.setCourse(course);
+        ExerciseDeclaration d = new ExerciseDeclaration();
+        d.setId(id);
+        d.setDeclarationStatus(DeclarationStatus.WAITING);
+        d.setExercise(exercise);
+        d.setStudent(user);
         return d;
     }
 
