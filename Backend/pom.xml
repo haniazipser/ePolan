@@ -203,24 +203,6 @@
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
 				<version>1.22.0</version>
-				<configuration>
-					<targetClasses>
-						<param>com.example.ePolan.*</param>
-					</targetClasses>
-					<targetTests>
-						<param>com.example.ePolan.MockedIntegration.*</param>
-					</targetTests>
-					<mutators>ALL</mutators>
-					<threads>4</threads>
-					<outputFormats>
-						<param>HTML</param>
-					</outputFormats>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.pitest</groupId>
-				<artifactId>pitest-maven</artifactId>
-				<version>1.22.0</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.pitest</groupId>
@@ -233,13 +215,28 @@
 						<param>com.example.ePolan.*</param>
 					</targetClasses>
 					<targetTests>
-						<param>com.example.ePolan.*Test</param>
+						<param>com.example.ePolan.*</param>
 					</targetTests>
 					<mutators>ALL</mutators>
-					<threads>4</threads>
+					<threads>2</threads>
+					<timeoutConstant>30000</timeoutConstant>
+					<timeoutFactor>3.0</timeoutFactor>
+					<jvmArgs>
+						<jvmArg>-Xmx2G</jvmArg>
+					</jvmArgs>
 					<outputFormats>
 						<param>HTML</param>
 					</outputFormats>
+					<failWhenNoMutations>false</failWhenNoMutations>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.arcmutate</groupId>
+				<artifactId>arcmutate-maven-plugin</artifactId>
+				<version>0.5.3</version>
+				<configuration>
+					<kotlin>true</kotlin>
+					<spring>true</spring>
 				</configuration>
 			</plugin>
 

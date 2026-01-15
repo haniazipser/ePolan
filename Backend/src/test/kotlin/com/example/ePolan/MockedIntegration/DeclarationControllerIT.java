@@ -1,14 +1,10 @@
 package com.example.ePolan.MockedIntegration;
 
-import com.example.ePolan.Model.Dtos.DeclarationDto;
-import com.example.ePolan.Model.Dtos.DeclarationShortDto;
 import com.example.ePolan.Model.Entities.*;
 import com.example.ePolan.Repositories.DeclarationRepository;
 import com.example.ePolan.Repositories.UserRepository;
 import com.example.ePolan.Services.DeclarationService;
-import com.example.ePolan.Services.ExerciseApplicationService;
 import com.example.ePolan.Utils.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
