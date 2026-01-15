@@ -50,7 +50,7 @@ class CourseControllerIT {
 
         User user = TestUsers.user("test-user");
         User creator = TestUsers.user("test-creator");
-        Course course = TestCourses.course("Algebra", creator);
+        Course course = TestCourses.course(UUID.randomUUID(),"Algebra", creator);
         course.setInstructor("Cooke");
 
         when(courseRepository.findDistinctByStudents_Student_IdAndStudents_InvitationStatus("test-user", InvitationStatus.ACCEPTED))
@@ -90,8 +90,8 @@ class CourseControllerIT {
         User creator1 = TestUsers.user("creator-1");
         User creator2 = TestUsers.user("creator-2");
 
-        Course course1 = TestCourses.course("Algebra", creator1);
-        Course course2 = TestCourses.course("Geometry", creator2);
+        Course course1 = TestCourses.course(UUID.randomUUID(),"Algebra", creator1);
+        Course course2 = TestCourses.course(UUID.randomUUID(),"Geometry", creator2);
 
         when(userRepository.findById("test-user"))
                 .thenReturn(Optional.of(student));
