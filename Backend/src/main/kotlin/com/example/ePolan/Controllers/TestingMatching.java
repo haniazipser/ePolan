@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@RestController
-@RequiredArgsConstructor
-public class TestingMatching {
-    private final MatchingService matchingService;
-    @PostMapping("/match")
-    public void runMatchingAlgorithm(){
-        matchingService.scheduleTask();
-    }
-}
+//@RestController
+//@RequiredArgsConstructor
+//public class TestingMatching {
+//    private final MatchingService matchingService;
+//    @PostMapping("/match")
+//    public void runMatchingAlgorithm(){
+//        matchingService.scheduleTask();
+//    }
+//}
