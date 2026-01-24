@@ -36,7 +36,8 @@ public class LessonGenerator {
     }
 
     private Instant adjustToNoon(Instant instant) {
-        return instant.atZone(ZoneId.of("UTC"))
+        ZoneId zone = ZoneId.systemDefault();
+        return instant.atZone(zone)
                 .withHour(12)
                 .withMinute(0)
                 .withSecond(0)
