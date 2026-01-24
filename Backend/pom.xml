@@ -200,6 +200,46 @@
 				</dependencies>
 			</plugin>
 			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>1.22.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>1.2.3</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>com.example.ePolan.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>com.example.ePolan.*</param>
+					</targetTests>
+					<mutators>ALL</mutators>
+					<threads>2</threads>
+					<timeoutConstant>30000</timeoutConstant>
+					<timeoutFactor>3.0</timeoutFactor>
+					<jvmArgs>
+						<jvmArg>-Xmx2G</jvmArg>
+					</jvmArgs>
+					<outputFormats>
+						<param>HTML</param>
+					</outputFormats>
+					<failWhenNoMutations>false</failWhenNoMutations>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.arcmutate</groupId>
+				<artifactId>arcmutate-maven-plugin</artifactId>
+				<version>0.5.3</version>
+				<configuration>
+					<kotlin>true</kotlin>
+					<spring>true</spring>
+				</configuration>
+			</plugin>
+
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
