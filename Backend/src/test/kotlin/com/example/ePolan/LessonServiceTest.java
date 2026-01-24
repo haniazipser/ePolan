@@ -9,6 +9,8 @@ import com.example.ePolan.Model.Entities.Exercise;
 import com.example.ePolan.Model.Entities.Lesson;
 import com.example.ePolan.Model.Entities.Participant;
 import com.example.ePolan.Model.Entities.User;
+import com.example.ePolan.Model.requests.ExerciseListRequest;
+import com.example.ePolan.Model.requests.ExerciseRequest;
 import com.example.ePolan.Repositories.CourseRepository;
 import com.example.ePolan.Repositories.ExerciseRepository;
 import com.example.ePolan.Repositories.LessonRepository;
@@ -144,48 +146,23 @@ class LessonServiceTest {
         assertTrue(lessons.get(0).getClassDate().isBefore(lessons.get(1).getClassDate()));
     }
 
-//    @Test
-//    void testUpdateExercisesForLessonSuccess() {
-//        UUID lessonId = UUID.randomUUID();
-//        Lesson lesson = new Lesson();
-//        lesson.setId(lessonId);
-//
-//        LessonDto lessonDto = new LessonDto();
-//        lessonDto.setId(lessonId);
-//        ExerciseDto exDto = new ExerciseDto();
-//        exDto.setExerciseNumber(1);
-//        exDto.setSubpoint("a");
-//        lessonDto.setExercises(Collections.singletonList(exDto));
-//
-//        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-//        when(exerciseRepository.findByLesson(lesson)).thenReturn(Collections.emptySet());
-//        when(exerciseRepository.save(any(Exercise.class))).thenAnswer(i -> i.getArguments()[0]);
-//
-//        lessonService.updateExercisesForLesson(lessonDto);
-//
-//        verify(exerciseRepository, times(1)).save(any(Exercise.class));
-//    }
+    @Test
+    void testUpdateExercisesForLessonSuccess() {
+        UUID lessonId = UUID.randomUUID();
+        Lesson lesson = new Lesson();
+        lesson.setId(lessonId);
 
-//    @Test
-//    void testUpdateExercisesForLessonWithDeclarations() {
-//        UUID lessonId = UUID.randomUUID();
-//        Lesson lesson = new Lesson();
-//        lesson.setId(lessonId);
-//        Exercise exercise = new Exercise();
-//        exercise.setDeclarations(Collections.singleton(mock(Exercise.class)));
-//
-//        LessonDto lessonDto = new LessonDto();
-//        lessonDto.setId(lessonId);
-//        ExerciseDto exDto = new ExerciseDto();
-//        lessonDto.setExercises(Collections.singletonList(exDto));
-//
-//        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-//        when(exerciseRepository.findByLesson(lesson)).thenReturn(Collections.singleton(exercise));
-//
-//        assertThrows(ResponseStatusException.class,
-//                () -> lessonService.updateExercisesForLesson(lessonDto));
-//    }
+        ExerciseRequest exDto = new ExerciseRequest(1, "a");
+        ExerciseListRequest request = new ExerciseListRequest(Collections.singletonList(exDto));
 
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+        when(exerciseRepository.findByLesson(lesson)).thenReturn(Collections.emptySet());
+        when(exerciseRepository.save(any(Exercise.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        lessonService.updateExercisesForLesson(request, lessonId);
+
+        verify(exerciseRepository, times(1)).save(any(Exercise.class));
+    }
     @Test
     void testGetLessonInfoSuccess() {
         UUID lessonId = UUID.randomUUID();
